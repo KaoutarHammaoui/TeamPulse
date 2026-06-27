@@ -6,6 +6,7 @@ CREATE TABLE users (
   email TEXT NOT NULL UNIQUE,
   role TEXT NOT NULL CHECK(role IN ('admin','user')),
   password_hash TEXT NOT NULL,
+  token_version INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

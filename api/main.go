@@ -7,6 +7,7 @@ import (
 
 	"auth/db"
 	"auth/handlers"
+	"auth/middleweare"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -29,6 +30,13 @@ func main() {
 	r := chi.NewRouter()
 	r.Post("/register",authHandler.CreateUser)
 	r.Post("/login",authHandler.Login)
+
+	r.Group(func(r chi.Router) {
+		r.Use(func(next http.Handler) http.Handler {
+			return middleweare.AuthMiddleware(next,secret)
+		})
+		r.Get("/me",authHandler.Me)
+	})
 
 	log.Println("server is running on :8080")
 	if err:=http.ListenAndServe(":8080",r); err!=nil{

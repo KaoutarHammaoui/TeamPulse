@@ -1,15 +1,37 @@
 package main
 
 import (
-	"auth/db"
 	"log"
+	"net/http"
+	"os"
+
+	"auth/db"
+	"auth/handlers"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 )
 
-func main(){
-	db,err:= db.Connect("../app.db")
-	if err!=nil{
+func main() {
+	godotenv.Load() // readas .env and makes jwt_secret available via os.getenv
+	secret := []byte(os.Getenv("JWT_SECRET"))
+
+	Dbase, err := db.Connect("../app.db")
+	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	defer db.Close()
+	defer Dbase.Close()
+	authHandler := &handlers.AuthHandler{
+		DB:     Dbase,
+		Secret: secret,
+	}
+	r := chi.NewRouter()
+	r.Post("/register",authHandler.CreateUser)
+	r.Post("/login",authHandler.Login)
+
+	log.Println("server is running on :8080")
+	if err:=http.ListenAndServe(":8080",r); err!=nil{
+		log.Fatal(err)
+	}
 }

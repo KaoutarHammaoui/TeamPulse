@@ -1,7 +1,9 @@
 package db
 
-import "database/sql"
-
+import (
+	"database/sql"
+	_ "modernc.org/sqlite"
+)
 func Connect(path string)(*sql.DB,error){
 	//open just initializes a connection pool configuration without validationg the network connectionl
 	db,err:=sql.Open("sqlite",path)

@@ -51,13 +51,13 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	validStatuses := map[string]bool{"todo": true, "in_progress": true, "done": true}
-	if !validStatuses[TaskCreation.Status] {
+	if  TaskCreation.Status!="" && !validStatuses[TaskCreation.Status] {
 		http.Error(w, "invalid status value", 400)
 		return
 	}
 
 	validPriorities := map[string]bool{"low": true, "medium": true, "high": true}
-	if !validPriorities[TaskCreation.Priority] {
+	if TaskCreation.Priority!="" &&  !validPriorities[TaskCreation.Priority] {
 		http.Error(w, "invalid priority value", 400)
 		return
 	}

@@ -57,3 +57,45 @@ func (h *AuthHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(ProjectResponse{ID: lastIns, Title: ProjectStruct.Title, Description: ProjectStruct.Content})
 }
+
+func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", 405)
+		return
+	}
+
+	userId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "error in getting user id", 401)
+		return
+	}
+	query := `SELECT id,title,description FROM projects WHERE user_id=?`
+	resp, err := h.DB.Query(query, userId)
+	if err != nil {
+		http.Error(w, "error in getting projects data", 500)
+		return
+	}
+	defer resp.Close()
+	var Projects []ProjectResponse
+
+	for resp.Next() {
+		var Id int
+		var title string
+		var content string
+
+		if err:=resp.Err();err!=nil{
+			http.Error(w, "error reading project data", 500)
+			return
+		}
+
+		if err := resp.Scan(&Id, &title, &content); err != nil {
+			http.Error(w, "error readinf project data", 500)
+			return
+		}
+		pr := ProjectResponse{ID: int64(Id), Title: title, Description: content}
+		Projects = append(Projects, pr)
+	}
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(Projects)
+}

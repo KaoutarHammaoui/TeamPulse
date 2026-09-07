@@ -36,7 +36,8 @@ func main() {
 			return middleweare.AuthMiddleware(next,secret)
 		})
 		r.Get("/me",authHandler.Me)
-		r.Post("/projects",authHandler.CreatePost)
+		r.Post("/CreateProject",authHandler.CreatePost)
+		r.Get("/GetProjects",authHandler.GetAllProjects)
 	})
 
 	log.Println("server is running on :8080")

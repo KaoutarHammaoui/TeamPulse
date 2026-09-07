@@ -86,7 +86,7 @@ func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		var title string
 		var content string
 
-		if err:=resp.Err();err!=nil{
+		if err := resp.Err(); err != nil {
 			http.Error(w, "error reading project data", 500)
 			return
 		}
@@ -98,44 +98,74 @@ func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		pr := ProjectResponse{ID: int64(Id), Title: title, Description: content}
 		Projects = append(Projects, pr)
 	}
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(Projects)
 }
 
-
-func (h *AuthHandler) GetProject(w http.ResponseWriter, r *http.Request){
-	if r.Method!=http.MethodGet{
-		http.Error(w,"method not allowed",405)
+func (h *AuthHandler) GetProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", 405)
 		return
 	}
-	idParam,err:=strconv.Atoi(chi.URLParam(r,"id"))
-	if err!=nil{
-		http.Error(w,"Error in converting the id to int",500)
+	idParam, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Error in converting the id to int", 500)
 		return
 	}
-	UserId,ok:=r.Context().Value(middleweare.UserIDKey).(int)
-	if !ok{
-		http.Error(w,"Error in getting user id",401)
+	UserId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Error in getting user id", 401)
 		return
 	}
-	query:=`SELECT id,title,description FROM projects p WHERE p.id=? AND p.user_id=?`
+	query := `SELECT id,title,description FROM projects p WHERE p.id=? AND p.user_id=?`
 	var Id int
 	var title string
 	var description string
 
-	
-	respErr:=h.DB.QueryRow(query,idParam,UserId).Scan(&Id,&title,&description)
+	respErr := h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description)
 
-	if respErr!=nil {
-		http.Error(w,"Project doesn't exist",404)
+	if respErr != nil {
+		http.Error(w, "Project doesn't exist", 404)
 		return
 	}
-	Project:=ProjectResponse{ID: int64(Id),Title: title,Description: description}
-	
+	Project := ProjectResponse{ID: int64(Id), Title: title, Description: description}
 
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(Project)
+}
 
+func (h *AuthHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", 405)
+		return
+	}
+	UserID, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "erro in getting user id", 500)
+		return
+	}
+	IdParam, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "erro in getting user id", 500)
+		return
+	}
+	query := `DELETE FROM projects WHERE id=? AND user_id=?`
+	resp, err := h.DB.Exec(query, IdParam, UserID)
+	if err != nil {
+		http.Error(w, "error deleting project", 500)
+		return
+	}
+	
+	rowsAffected, err := resp.RowsAffected()
+		if err != nil {
+		http.Error(w, "error deleting project", 500)
+		return
+	}
+	if rowsAffected == 0 {
+		http.Error(w, "project not found", 404)
+		return
+	}
+	w.WriteHeader(204)
 }

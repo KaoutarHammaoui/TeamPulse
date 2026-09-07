@@ -38,6 +38,7 @@ func main() {
 		r.Get("/me",authHandler.Me)
 		r.Post("/CreateProject",authHandler.CreatePost)
 		r.Get("/GetProjects",authHandler.GetAllProjects)
+		r.Get("/GetProject/{id}",authHandler.GetProject)
 	})
 
 	log.Println("server is running on :8080")

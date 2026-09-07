@@ -3,8 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"auth/middleweare"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type RequestStruct struct {
@@ -98,4 +101,41 @@ func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(Projects)
+}
+
+
+func (h *AuthHandler) GetProject(w http.ResponseWriter, r *http.Request){
+	if r.Method!=http.MethodGet{
+		http.Error(w,"method not allowed",405)
+		return
+	}
+	idParam,err:=strconv.Atoi(chi.URLParam(r,"id"))
+	if err!=nil{
+		http.Error(w,"Error in converting the id to int",500)
+		return
+	}
+	UserId,ok:=r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok{
+		http.Error(w,"Error in getting user id",401)
+		return
+	}
+	query:=`SELECT id,title,description FROM projects p WHERE p.id=? AND p.user_id=?`
+	var Id int
+	var title string
+	var description string
+
+	
+	respErr:=h.DB.QueryRow(query,idParam,UserId).Scan(&Id,&title,&description)
+
+	if respErr!=nil {
+		http.Error(w,"Project doesn't exist",404)
+		return
+	}
+	Project:=ProjectResponse{ID: int64(Id),Title: title,Description: description}
+	
+
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(Project)
+
 }

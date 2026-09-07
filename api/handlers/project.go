@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
+	"strings"
+	
 	"auth/middleweare"
-
+	
 	"github.com/go-chi/chi/v5"
 )
 
@@ -19,6 +20,11 @@ type ProjectResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+}
+
+type UpdateProjectStruct struct{
+	Title *string `json:"title"`
+	Content *string `json:"content"`
 }
 
 func (h *AuthHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -168,4 +174,75 @@ func (h *AuthHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(204)
+}
+
+func (h *AuthHandler) UpdateProject(w http.ResponseWriter, r *http.Request){
+
+	if r.Method!=http.MethodPatch{
+		http.Error(w,"method not allowed",405)
+		return
+	}
+
+	userId,ok:= r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok{
+		http.Error(w,"error in getting the userID",401)
+		return
+	}
+
+	ProjectId,err:= strconv.Atoi(chi.URLParam(r,"id"))
+	if err!=nil{
+		http.Error(w,"error in converting id to int",400)
+		return
+	}
+
+	pr:=UpdateProjectStruct{}
+
+	
+	if err:=json.NewDecoder(r.Body).Decode(&pr); err!=nil{
+		http.Error(w,"error in decoding body",400)
+		return
+	}
+	if pr.Title==nil && pr.Content==nil{
+		http.Error(w,"both title and content are empty",400)
+		return
+	}
+
+	setClause:=[]string{}
+	args:=[]interface{}{}
+
+	if pr.Title!=nil {
+		title:=strings.TrimSpace(*pr.Title)
+		if title == "" {
+            http.Error(w, "title cannot be empty", http.StatusBadRequest)
+            return
+        }
+		setClause = append(setClause, "title=?")
+		args = append(args, *pr.Title)
+	}
+	if pr.Content!=nil{
+		content:=strings.TrimSpace(*pr.Content)
+		if content==""{
+			http.Error(w, "Content cannot be empty", http.StatusBadRequest)
+            return
+		}
+		setClause = append(setClause, "description=?")
+		args = append(args, *pr.Content)
+	}
+	
+	query:= `UPDATE projects SET ` + strings.Join(setClause, ", ") + ` WHERE id=? AND user_id=?`
+	args = append(args, ProjectId,userId)
+
+	res,err:=h.DB.Exec(query,args...)
+	if err!=nil{
+		http.Error(w,"error in execution",500)
+		return
+	}
+	AffectedRows,err:=res.RowsAffected()
+	if err!=nil || AffectedRows==0{
+		http.Error(w,"no row was affected",404)
+		return
+	}
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(&UpdateProjectStruct{Title: pr.Title,Content: pr.Content})
 }

@@ -42,6 +42,7 @@ func main() {
 		r.Delete("/DeleteProject/{id}",authHandler.DeleteProject)
 		r.Patch("/UpdateProject/{id}",authHandler.UpdateProject)
 		r.Post("/projects/{projectId}/AddTask",authHandler.CreateTask)
+		r.Get("/GetTasks",authHandler.GetAllProjectTasks)
 	})
 
 	log.Println("server is running on :8080")

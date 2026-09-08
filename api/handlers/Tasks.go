@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"auth/middleweare"
 )
@@ -52,13 +54,13 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	validStatuses := map[string]bool{"todo": true, "in_progress": true, "done": true}
-	if  TaskCreation.Status!="" && !validStatuses[TaskCreation.Status] {
+	if TaskCreation.Status != "" && !validStatuses[TaskCreation.Status] {
 		http.Error(w, "invalid status value", 400)
 		return
 	}
 
 	validPriorities := map[string]bool{"low": true, "medium": true, "high": true}
-	if TaskCreation.Priority!="" &&  !validPriorities[TaskCreation.Priority] {
+	if TaskCreation.Priority != "" && !validPriorities[TaskCreation.Priority] {
 		http.Error(w, "invalid priority value", 400)
 		return
 	}
@@ -71,8 +73,19 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := `INSERT INTO tasks (project_id,title,description,status,priority,due_date) VALUES (?,?,?,?,?,?)`
+	if TaskCreation.Status == "" {
+		TaskCreation.Status = "todo"
+	}
+	if TaskCreation.Priority == "" {
+		TaskCreation.Priority = "medium"
+	}
+	if TaskCreation.Due_date == "" {
+		TaskCreation.Due_date = time.Now().AddDate(0, 1, 0).Format("2006-01-02 15:04:05")
+	}
+
 	Insertion, err := h.DB.Exec(query, TaskCreation.ProjectId, TaskCreation.Title, TaskCreation.Description, TaskCreation.Status, TaskCreation.Priority, TaskCreation.Due_date)
 	if err != nil {
+		log.Println("insert error:", err)
 		http.Error(w, "error in insertion", 500)
 		return
 	}
@@ -86,53 +99,62 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(TaskStructureResp{ID: int(lastIns), Title: TaskCreation.Title, Description: TaskCreation.Description, Due_date: TaskCreation.Due_date, ProjectId: TaskCreation.ProjectId, Status: TaskCreation.Status, Priority: TaskCreation.Priority})
 }
 
-
-func (h* AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request){
-	if r.Method!=http.MethodGet{
-		http.Error(w,"method not allowed",405)
+func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", 405)
 		return
 	}
 
-	UserId,ok:=r.Context().Value(middleweare.UserIDKey).(int)
-	if !ok{
-		http.Error(w,"error in getting the user id",400)
+	UserId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "error in getting the user id", 400)
 		return
 	}
-	idFromQuery,err:= strconv.Atoi(r.URL.Query().Get("project_id"))
-	if err!=nil{
-		http.Error(w,"error in converting the user id to int",500)
+	idFromQuery, err := strconv.Atoi(r.URL.Query().Get("project_id"))
+	if err != nil {
+		http.Error(w, "error in converting the user id to int", 500)
 		return
 	}
 	var exists int
-	existQuery:=`SELECT id FROM projects WHERE project_id=? AND user_id=?`
-	ExistInsertion:= h.DB.QueryRow(existQuery,idFromQuery,UserId).Scan(&exists)
-	if ExistInsertion!=nil {
-		http.Error(w,"error in user id",400)
+	existQuery := `SELECT id FROM projects WHERE id=? AND user_id=?`
+	ExistInsertionErr := h.DB.QueryRow(existQuery, idFromQuery, UserId).Scan(&exists)
+	if ExistInsertionErr != nil {
+		http.Error(w, "error in id", 400)
 		return
 	}
 
-	query:=`SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=?`
-	Inserion,err:= h.DB.Query(query,idFromQuery)
-
-	for Inserion.Next(){
-		var id int 
+	query := `SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=?`
+	Insertion, err := h.DB.Query(query, idFromQuery)
+	if err != nil {
+		http.Error(w, "error querying tasks", 500)
+		return
+	}
+	defer Insertion.Close()
+	tasksSlice := []TaskStructureResp{}
+	for Insertion.Next() {
+		var id int
 		var title string
 		var description string
 		var status string
 		var priority string
 		var due_date string
-		if Inserion.Err()!=nil{
-			http.Error(w,"error in getting data in next loop",500)
+
+		Inserr := Insertion.Scan(&id, &title, &description, &status, &priority, &due_date)
+		if Inserr != nil {
+			http.Error(w, "error in scan step", 500)
 			return
 		}
-	
-		Inserr:=Inserion.Scan(&id,&title,&description,&status,&priority,&due_date)
-		if Inserr!=nil{
-			http.Error(w,"error in scan step",500)
-			return
-		}
-		task:=TaskStructureResp{ID: }
+		task := TaskStructureResp{ID: id, ProjectId: idFromQuery, Title: title, Description: description, Status: status, Priority: priority, Due_date: due_date}
+		tasksSlice = append(tasksSlice, task)
+
 	}
 
+	if Insertion.Err() != nil {
+		http.Error(w, "error in getting data in next loop", 500)
+		return
+	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(&tasksSlice)
 }

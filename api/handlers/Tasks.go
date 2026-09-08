@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"auth/middleweare"
@@ -29,6 +30,15 @@ type TaskStructureResp struct {
 	Status      string `json:"status"`
 	Priority    string `json:"priority"`
 	Due_date    string `json:"due_date"`
+}
+
+type UpdateTaskStruct struct {
+	ProjectId   *int    `json:"projectid"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	Status      *string `json:"status"`
+	Priority    *string `json:"priority"`
+	Due_date    *string `json:"due_date"`
 }
 
 func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -178,14 +188,14 @@ func (h *AuthHandler) GetOneTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := `SELECT t.id,t.project_id,t.title,t.description,t.status,t.priority,t.due_date FROM tasks t JOIN projects p ON t.project_id=p.id WHERE t.id=? AND p.user_id=?`
-	var Id,projectID int
+	var Id, projectID int
 	var title string
 	var description string
 	var status string
 	var priority string
 	var due_Date string
 
-	respErr := h.DB.QueryRow(query, idParam, userId).Scan(&Id,&projectID, &title, &description, &status, &priority, &due_Date)
+	respErr := h.DB.QueryRow(query, idParam, userId).Scan(&Id, &projectID, &title, &description, &status, &priority, &due_Date)
 	if respErr != nil {
 		http.Error(w, "not found", 404)
 		return
@@ -196,4 +206,124 @@ func (h *AuthHandler) GetOneTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(&Task)
+}
+
+func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "method not allowed", 405)
+		return
+	}
+	TaskId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "error in task id", 400)
+		return
+	}
+
+	UserId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "error in getting user id", 400)
+		return
+	}
+
+	task := UpdateTaskStruct{}
+	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+		http.Error(w, "error in decoding body", 400)
+		return
+	}
+	if task.Description == nil && task.Due_date == nil && task.Priority == nil && task.ProjectId == nil && task.Status == nil && task.Title == nil {
+		http.Error(w, "u must fill at least 1 filed", 400)
+		return
+	}
+	Clause := []string{}
+	args := []interface{}{}
+
+	if task.ProjectId!=nil{
+		prId:= *task.ProjectId
+		if prId<=0{
+			http.Error(w,"project id is invalid",400)
+			return
+		}
+		var projectID int
+		err := h.DB.QueryRow(`SELECT id FROM projects WHERE id=? AND user_id=?`, *task.ProjectId, UserId).Scan(&projectID)
+		if err != nil {
+			http.Error(w, "project not found", 404)
+			return
+		}
+		Clause = append(Clause, "project_id=?")
+		args = append(args, prId)
+	}
+
+	if task.Title != nil {
+		title := strings.TrimSpace(*task.Title)
+		if title == "" {
+			http.Error(w, "title cannot be empty", 400)
+			return
+		}
+		Clause = append(Clause, "title=?")
+		args=append(args, title)
+	}
+
+	if task.Description != nil {
+		Description := strings.TrimSpace(*task.Description)
+		if Description == "" {
+			http.Error(w, "Content cannot be empty", 400)
+			return
+		}
+		Clause = append(Clause, "description=?")
+		args = append(args, Description)
+	}
+
+	if task.Due_date != nil {
+		date := strings.TrimSpace(*task.Due_date)
+		if date == "" {
+			http.Error(w, "Date cannot be empty", 400)
+			return
+		}
+		Clause = append(Clause, "due_date=?")
+		args = append(args, date)
+	}
+
+	if task.Priority != nil {
+		AllowedPriorities := map[string]bool{"low": true, "medium": true, "high": true}
+		if !AllowedPriorities[*task.Priority] {
+			http.Error(w, "property is not allowed", 400)
+			return
+		}
+		Clause = append(Clause,"priority=?" )
+		args = append(args, *task.Priority)
+	}
+
+	if task.Status != nil {
+		AllowedStatus := map[string]bool{"todo": true, "in_progress": true, "done": true}
+		if !AllowedStatus[*task.Status] {
+			http.Error(w, "status not allowed", 400)
+			return
+		}
+		Clause=append(Clause, "status=?")
+		args = append(args, *task.Status)
+	}
+
+	query:=`UPDATE tasks SET `+strings.Join(Clause,", ")+` WHERE id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)`
+	args = append(args, TaskId,UserId)
+
+	res,err:=h.DB.Exec(query,args...)
+	if err!=nil{
+		http.Error(w,"insertion error",404)
+		return
+
+	}
+	AffectedRows,err:=res.RowsAffected()
+	if err!=nil{
+		http.Error(w,"error while counting affected rows",500)
+		return
+	}
+	if AffectedRows==0{
+		http.Error(w,"no row was changed",500)
+		return
+	}
+
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(&UpdateTaskStruct{ProjectId: task.ProjectId,Title: task.Title,Description: task.Description,Due_date: task.Due_date,Status: task.Status,Priority: task.Priority})
+
 }

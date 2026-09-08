@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"auth/middleweare"
 )
@@ -83,4 +84,55 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(TaskStructureResp{ID: int(lastIns), Title: TaskCreation.Title, Description: TaskCreation.Description, Due_date: TaskCreation.Due_date, ProjectId: TaskCreation.ProjectId, Status: TaskCreation.Status, Priority: TaskCreation.Priority})
+}
+
+
+func (h* AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request){
+	if r.Method!=http.MethodGet{
+		http.Error(w,"method not allowed",405)
+		return
+	}
+
+	UserId,ok:=r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok{
+		http.Error(w,"error in getting the user id",400)
+		return
+	}
+	idFromQuery,err:= strconv.Atoi(r.URL.Query().Get("project_id"))
+	if err!=nil{
+		http.Error(w,"error in converting the user id to int",500)
+		return
+	}
+	var exists int
+	existQuery:=`SELECT id FROM projects WHERE project_id=? AND user_id=?`
+	ExistInsertion:= h.DB.QueryRow(existQuery,idFromQuery,UserId).Scan(&exists)
+	if ExistInsertion!=nil {
+		http.Error(w,"error in user id",400)
+		return
+	}
+
+	query:=`SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=?`
+	Inserion,err:= h.DB.Query(query,idFromQuery)
+
+	for Inserion.Next(){
+		var id int 
+		var title string
+		var description string
+		var status string
+		var priority string
+		var due_date string
+		if Inserion.Err()!=nil{
+			http.Error(w,"error in getting data in next loop",500)
+			return
+		}
+	
+		Inserr:=Inserion.Scan(&id,&title,&description,&status,&priority,&due_date)
+		if Inserr!=nil{
+			http.Error(w,"error in scan step",500)
+			return
+		}
+		task:=TaskStructureResp{ID: }
+	}
+
+
 }

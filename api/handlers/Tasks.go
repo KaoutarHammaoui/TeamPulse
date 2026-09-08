@@ -327,3 +327,40 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&UpdateTaskStruct{ProjectId: task.ProjectId,Title: task.Title,Description: task.Description,Due_date: task.Due_date,Status: task.Status,Priority: task.Priority})
 
 }
+
+func (h *AuthHandler) DeleteTask(w http.ResponseWriter, r *http.Request){
+	if r.Method!=http.MethodDelete{
+		http.Error(w,"method not allowed",405)
+		return
+	}
+
+	UserId,ok:=r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok{
+		http.Error(w,"error in getting user id",400)
+		return
+	}
+	TaskId,err:= strconv.Atoi(chi.URLParam(r,"id"))
+	if err!=nil{
+		http.Error(w,"error in converting id to int",400)
+		return
+	}
+
+	query:=`DELETE FROM tasks WHERE id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)`
+	QueryREsp,err:= h.DB.Exec(query,TaskId,UserId)
+	if err!=nil{
+		http.Error(w,"error in deletiob",500)
+		return
+	}
+	rowDeleted,err:= QueryREsp.RowsAffected()
+	if err!=nil{
+		http.Error(w,"no row was affected",500)
+		return
+	}
+	if rowDeleted==0{
+		http.Error(w,"task wasn't found",404)
+		return
+	}
+
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(204)
+}

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"auth/middleweare"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type TaskStructure struct {
@@ -157,4 +159,41 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(&tasksSlice)
+}
+
+func (h *AuthHandler) GetOneTask(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", 405)
+		return
+	}
+
+	idParam, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "error in id", 500)
+		return
+	}
+	userId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "error in getting user id", 405)
+		return
+	}
+	query := `SELECT t.id,t.project_id,t.title,t.description,t.status,t.priority,t.due_date FROM tasks t JOIN projects p ON t.project_id=p.id WHERE t.id=? AND p.user_id=?`
+	var Id,projectID int
+	var title string
+	var description string
+	var status string
+	var priority string
+	var due_Date string
+
+	respErr := h.DB.QueryRow(query, idParam, userId).Scan(&Id,&projectID, &title, &description, &status, &priority, &due_Date)
+	if respErr != nil {
+		http.Error(w, "not found", 404)
+		return
+	}
+
+	Task := TaskStructureResp{ID: Id, ProjectId: projectID, Title: title, Description: description, Status: status, Priority: priority, Due_date: due_Date}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(&Task)
 }

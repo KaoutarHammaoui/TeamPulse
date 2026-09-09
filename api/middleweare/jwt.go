@@ -10,6 +10,7 @@ import (
 type contextKey string
 
 const UserIDKey contextKey = "userID"
+const RoleKey contextKey="role"
 
 func AuthMiddleware(next http.Handler,secretKey []byte) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +30,9 @@ func AuthMiddleware(next http.Handler,secretKey []byte) http.Handler {
 			return 
 		}
 		ctx:=context.WithValue(r.Context(),UserIDKey,checking.UserID)
+		ctx=context.WithValue(ctx,RoleKey,checking.Role)
 		r=r.WithContext(ctx)
+		
 		next.ServeHTTP(w,r)
 	})
 }

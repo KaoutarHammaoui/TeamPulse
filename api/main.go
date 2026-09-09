@@ -28,28 +28,28 @@ func main() {
 		Secret: secret,
 	}
 	r := chi.NewRouter()
-	r.Post("/register",authHandler.CreateUser)
-	r.Post("/login",authHandler.Login)
+	r.Post("/register", authHandler.CreateUser)
+	r.Post("/login", authHandler.Login)
 
 	r.Group(func(r chi.Router) {
 		r.Use(func(next http.Handler) http.Handler {
-			return middleweare.AuthMiddleware(next,secret)
+			return middleweare.AuthMiddleware(next, secret)
 		})
-		r.Get("/me",authHandler.Me)
-		r.Post("/CreateProject",authHandler.CreatePost)
-		r.Get("/GetProjects",authHandler.GetAllProjects)
-		r.Get("/GetProject/{id}",authHandler.GetProject)
-		r.Delete("/DeleteProject/{id}",authHandler.DeleteProject)
-		r.Patch("/UpdateProject/{id}",authHandler.UpdateProject)
-		r.Post("/projects/{projectId}/AddTask",authHandler.CreateTask)
-		r.Get("/GetTasks",authHandler.GetAllProjectTasks)
-		r.Get("/tasks/{id}",authHandler.GetOneTask)
-		r.Patch("/UpdateTask/{id}",authHandler.UpdateTask)
-		r.Delete("/DeleteTask/{id}",authHandler.DeleteTask)
+		r.Get("/me", authHandler.Me)
+		r.Post("/CreateProject", authHandler.CreateProject)
+		r.Get("/GetProjects", authHandler.GetAllProjects)
+		r.Get("/GetProject/{id}", authHandler.GetProject)
+		r.Delete("/DeleteProject/{id}", authHandler.DeleteProject)
+		r.Patch("/UpdateProject/{id}", authHandler.UpdateProject)
+		r.Post("/projects/{projectId}/AddTask", authHandler.CreateTask)
+		r.Get("/GetTasks", authHandler.GetAllProjectTasks)
+		r.Get("/tasks/{id}", authHandler.GetOneTask)
+		r.Patch("/UpdateTask/{id}", authHandler.UpdateTask)
+		r.Delete("/DeleteTask/{id}", authHandler.DeleteTask)
 	})
 
 	log.Println("server is running on :8080")
-	if err:=http.ListenAndServe(":8080",r); err!=nil{
+	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
 	}
 }

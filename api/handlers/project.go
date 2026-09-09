@@ -1,13 +1,15 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
-	
+
 	"auth/middleweare"
-	
+	"auth/models"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -22,12 +24,12 @@ type ProjectResponse struct {
 	Description string `json:"description"`
 }
 
-type UpdateProjectStruct struct{
-	Title *string `json:"title"`
+type UpdateProjectStruct struct {
+	Title   *string `json:"title"`
 	Content *string `json:"content"`
 }
 
-func (h *AuthHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed in post insertion", 405)
 		return
@@ -37,6 +39,7 @@ func (h *AuthHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error in getting user id", 401)
 		return
 	}
+
 	ProjectStruct := RequestStruct{}
 	ProjectBody := r.Body
 	ProjectDecoding := json.NewDecoder(ProjectBody).Decode(&ProjectStruct)
@@ -78,12 +81,28 @@ func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error in getting user id", 401)
 		return
 	}
-	query := `SELECT id,title,description FROM projects WHERE user_id=?`
-	resp, err := h.DB.Query(query, userId)
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role", 401)
+		return
+	}
+
+	var query string
+	var resp *sql.Rows
+	var err error
+	if role == string(models.AdminRole) {
+		query = `SELECT id,title,description FROM projects`
+		resp, err = h.DB.Query(query)
+	} else {
+		query = `SELECT id,title,description FROM projects WHERE user_id=?`
+		resp, err = h.DB.Query(query, userId)
+	}
+
 	if err != nil {
 		http.Error(w, "error in getting projects data", 500)
 		return
 	}
+
 	defer resp.Close()
 	var Projects []ProjectResponse
 
@@ -124,12 +143,25 @@ func (h *AuthHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error in getting user id", 401)
 		return
 	}
-	query := `SELECT id,title,description FROM projects p WHERE p.id=? AND p.user_id=?`
+
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role from context", 401)
+		return
+	}
+
+	var respErr error
 	var Id int
 	var title string
 	var description string
 
-	respErr := h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description)
+	if role == string(models.AdminRole) {
+		query := `SELECT id,title,description FROM projects WHERE id=?`
+		respErr = h.DB.QueryRow(query, idParam).Scan(&Id, &title, &description)
+	} else {
+		query := `SELECT id,title,description FROM projects WHERE id=? AND user_id=?`
+		respErr = h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description)
+	}
 
 	if respErr != nil {
 		http.Error(w, "Project doesn't exist", 404)
@@ -152,20 +184,36 @@ func (h *AuthHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "erro in getting user id", 500)
 		return
 	}
+
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role from context", 401)
+		return
+	}
+
 	IdParam, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, "erro in getting user id", 500)
 		return
 	}
-	query := `DELETE FROM projects WHERE id=? AND user_id=?`
-	resp, err := h.DB.Exec(query, IdParam, UserID)
+
+	var query string
+	args := []interface{}{}
+	if role == string(models.AdminRole) {
+		query = `DELETE FROM projects WHERE id=?`
+		args = append(args, IdParam)
+	} else {
+		query = `DELETE FROM projects WHERE id=? AND user_id=?`
+		args = append(args, IdParam, UserID)
+	}
+	resp, err := h.DB.Exec(query, args...)
 	if err != nil {
 		http.Error(w, "error deleting project", 500)
 		return
 	}
-	
+
 	rowsAffected, err := resp.RowsAffected()
-		if err != nil {
+	if err != nil {
 		http.Error(w, "error deleting project", 500)
 		return
 	}
@@ -176,73 +224,85 @@ func (h *AuthHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(204)
 }
 
-func (h *AuthHandler) UpdateProject(w http.ResponseWriter, r *http.Request){
+func (h *AuthHandler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method!=http.MethodPatch{
-		http.Error(w,"method not allowed",405)
+	if r.Method != http.MethodPatch {
+		http.Error(w, "method not allowed", 405)
 		return
 	}
 
-	userId,ok:= r.Context().Value(middleweare.UserIDKey).(int)
-	if !ok{
-		http.Error(w,"error in getting the userID",401)
+	userId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "error in getting the userID", 401)
 		return
 	}
 
-	ProjectId,err:= strconv.Atoi(chi.URLParam(r,"id"))
-	if err!=nil{
-		http.Error(w,"error in converting id to int",400)
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role", 401)
 		return
 	}
 
-	pr:=UpdateProjectStruct{}
-
-	
-	if err:=json.NewDecoder(r.Body).Decode(&pr); err!=nil{
-		http.Error(w,"error in decoding body",400)
-		return
-	}
-	if pr.Title==nil && pr.Content==nil{
-		http.Error(w,"both title and content are empty",400)
+	ProjectId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "error in converting id to int", 400)
 		return
 	}
 
-	setClause:=[]string{}
-	args:=[]interface{}{}
+	pr := UpdateProjectStruct{}
 
-	if pr.Title!=nil {
-		title:=strings.TrimSpace(*pr.Title)
+	if err := json.NewDecoder(r.Body).Decode(&pr); err != nil {
+		http.Error(w, "error in decoding body", 400)
+		return
+	}
+	if pr.Title == nil && pr.Content == nil {
+		http.Error(w, "both title and content are empty", 400)
+		return
+	}
+
+	setClause := []string{}
+	args := []interface{}{}
+
+	if pr.Title != nil {
+		title := strings.TrimSpace(*pr.Title)
 		if title == "" {
-            http.Error(w, "title cannot be empty", http.StatusBadRequest)
-            return
-        }
+			http.Error(w, "title cannot be empty", http.StatusBadRequest)
+			return
+		}
 		setClause = append(setClause, "title=?")
 		args = append(args, *pr.Title)
 	}
-	if pr.Content!=nil{
-		content:=strings.TrimSpace(*pr.Content)
-		if content==""{
+	if pr.Content != nil {
+		content := strings.TrimSpace(*pr.Content)
+		if content == "" {
 			http.Error(w, "Content cannot be empty", http.StatusBadRequest)
-            return
+			return
 		}
 		setClause = append(setClause, "description=?")
 		args = append(args, *pr.Content)
 	}
-	
-	query:= `UPDATE projects SET ` + strings.Join(setClause, ", ") + ` WHERE id=? AND user_id=?`
-	args = append(args, ProjectId,userId)
 
-	res,err:=h.DB.Exec(query,args...)
-	if err!=nil{
-		http.Error(w,"error in execution",500)
+	var query string
+	if role == string(models.AdminRole) {
+		query = `UPDATE projects SET ` + strings.Join(setClause, ", ") + ` WHERE id=? `
+		args = append(args, ProjectId)
+
+	} else {
+		query = `UPDATE projects SET ` + strings.Join(setClause, ", ") + ` WHERE id=? AND user_id=?`
+		args = append(args, ProjectId, userId)
+	}
+
+	res, err := h.DB.Exec(query, args...)
+	if err != nil {
+		http.Error(w, "error in execution", 500)
 		return
 	}
-	AffectedRows,err:=res.RowsAffected()
-	if err!=nil || AffectedRows==0{
-		http.Error(w,"no row was affected",404)
+	AffectedRows, err := res.RowsAffected()
+	if err != nil || AffectedRows == 0 {
+		http.Error(w, "no row was affected", 404)
 		return
 	}
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(&UpdateProjectStruct{Title: pr.Title,Content: pr.Content})
+	json.NewEncoder(w).Encode(&UpdateProjectStruct{Title: pr.Title, Content: pr.Content})
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"auth/middleweare"
+	"auth/models"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -77,8 +78,23 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role", 401)
+		return
+	}
+
 	var exists int
-	err := h.DB.QueryRow(`SELECT id FROM projects WHERE id=? AND user_id=?`, TaskCreation.ProjectId, UserID).Scan(&exists)
+	var existQuery string
+	existArgs := []interface{}{}
+	if role == string(models.AdminRole) {
+		existQuery = `SELECT id FROM projects WHERE id=?`
+		existArgs = append(existArgs, TaskCreation.ProjectId)
+	} else {
+		existQuery = `SELECT id FROM projects WHERE id=? AND user_id=?`
+		existArgs = append(existArgs, TaskCreation.ProjectId, UserID)
+	}
+	err := h.DB.QueryRow(existQuery, existArgs...).Scan(&exists)
 	if err != nil {
 		http.Error(w, "project not found", 404)
 		return
@@ -122,14 +138,30 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error in getting the user id", 400)
 		return
 	}
+
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role", 401)
+		return
+	}
+
 	idFromQuery, err := strconv.Atoi(r.URL.Query().Get("project_id"))
 	if err != nil {
 		http.Error(w, "error in converting the user id to int", 500)
 		return
 	}
 	var exists int
-	existQuery := `SELECT id FROM projects WHERE id=? AND user_id=?`
-	ExistInsertionErr := h.DB.QueryRow(existQuery, idFromQuery, UserId).Scan(&exists)
+	var existQuery string
+	args := []interface{}{}
+	if role == string(models.AdminRole) {
+		existQuery = `SELECT id FROM projects WHERE id=?`
+		args = append(args, idFromQuery)
+	} else {
+		existQuery = `SELECT id FROM projects WHERE id=? AND user_id=?`
+		args = append(args, idFromQuery, UserId)
+	}
+
+	ExistInsertionErr := h.DB.QueryRow(existQuery, args...).Scan(&exists)
 	if ExistInsertionErr != nil {
 		http.Error(w, "error in id", 400)
 		return
@@ -187,7 +219,24 @@ func (h *AuthHandler) GetOneTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error in getting user id", 405)
 		return
 	}
-	query := `SELECT t.id,t.project_id,t.title,t.description,t.status,t.priority,t.due_date FROM tasks t JOIN projects p ON t.project_id=p.id WHERE t.id=? AND p.user_id=?`
+
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role from context", 401)
+		return
+	}
+
+	var query string
+	args := []interface{}{}
+	if role == string(models.AdminRole) {
+		query = `SELECT t.id,t.project_id,t.title,t.description,t.status,t.priority,t.due_date FROM tasks t JOIN projects p ON t.project_id=p.id WHERE t.id=?`
+		args = append(args, idParam)
+
+	} else {
+		query = `SELECT t.id,t.project_id,t.title,t.description,t.status,t.priority,t.due_date FROM tasks t JOIN projects p ON t.project_id=p.id WHERE t.id=? AND p.user_id=?`
+		args = append(args, idParam, userId)
+
+	}
 	var Id, projectID int
 	var title string
 	var description string
@@ -195,7 +244,7 @@ func (h *AuthHandler) GetOneTask(w http.ResponseWriter, r *http.Request) {
 	var priority string
 	var due_Date string
 
-	respErr := h.DB.QueryRow(query, idParam, userId).Scan(&Id, &projectID, &title, &description, &status, &priority, &due_Date)
+	respErr := h.DB.QueryRow(query, args...).Scan(&Id, &projectID, &title, &description, &status, &priority, &due_Date)
 	if respErr != nil {
 		http.Error(w, "not found", 404)
 		return
@@ -225,6 +274,12 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role from context", 401)
+		return
+	}
+
 	task := UpdateTaskStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 		http.Error(w, "error in decoding body", 400)
@@ -237,14 +292,24 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	Clause := []string{}
 	args := []interface{}{}
 
-	if task.ProjectId!=nil{
-		prId:= *task.ProjectId
-		if prId<=0{
-			http.Error(w,"project id is invalid",400)
+	if task.ProjectId != nil {
+		prId := *task.ProjectId
+		if prId <= 0 {
+			http.Error(w, "project id is invalid", 400)
 			return
 		}
 		var projectID int
-		err := h.DB.QueryRow(`SELECT id FROM projects WHERE id=? AND user_id=?`, *task.ProjectId, UserId).Scan(&projectID)
+		var query string
+		QueryArgs:=[]interface{}{}
+		if role==string(models.AdminRole){
+			query=`SELECT id FROM projects WHERE id=?`
+			QueryArgs=append(QueryArgs, prId)
+
+		}else{
+			query=`SELECT id FROM projects WHERE id=? AND user_id=?`
+			QueryArgs=append(QueryArgs, prId,UserId)
+		}
+		err := h.DB.QueryRow(query, QueryArgs...).Scan(&projectID)
 		if err != nil {
 			http.Error(w, "project not found", 404)
 			return
@@ -260,7 +325,7 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		Clause = append(Clause, "title=?")
-		args=append(args, title)
+		args = append(args, title)
 	}
 
 	if task.Description != nil {
@@ -289,7 +354,7 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "property is not allowed", 400)
 			return
 		}
-		Clause = append(Clause,"priority=?" )
+		Clause = append(Clause, "priority=?")
 		args = append(args, *task.Priority)
 	}
 
@@ -299,68 +364,91 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "status not allowed", 400)
 			return
 		}
-		Clause=append(Clause, "status=?")
+		Clause = append(Clause, "status=?")
 		args = append(args, *task.Status)
 	}
 
-	query:=`UPDATE tasks SET `+strings.Join(Clause,", ")+` WHERE id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)`
-	args = append(args, TaskId,UserId)
+	var query string
 
-	res,err:=h.DB.Exec(query,args...)
-	if err!=nil{
-		http.Error(w,"insertion error",404)
+	if role == string(models.AdminRole) {
+		query = `UPDATE tasks SET ` + strings.Join(Clause, ", ") + ` WHERE id=?`
+		args = append(args, TaskId)
+	} else {
+		query = `UPDATE tasks SET ` + strings.Join(Clause, ", ") + ` WHERE id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)`
+		args = append(args, TaskId, UserId)
+	}
+
+	res, err := h.DB.Exec(query, args...)
+	if err != nil {
+		http.Error(w, "insertion error", 500)
 		return
 
 	}
-	AffectedRows,err:=res.RowsAffected()
-	if err!=nil{
-		http.Error(w,"error while counting affected rows",500)
+	AffectedRows, err := res.RowsAffected()
+	if err != nil {
+		http.Error(w, "error while counting affected rows", 500)
 		return
 	}
-	if AffectedRows==0{
-		http.Error(w,"no row was changed",500)
+	if AffectedRows == 0 {
+		http.Error(w, "no row was changed", 500)
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	json.NewEncoder(w).Encode(&UpdateTaskStruct{ProjectId: task.ProjectId,Title: task.Title,Description: task.Description,Due_date: task.Due_date,Status: task.Status,Priority: task.Priority})
-
+	json.NewEncoder(w).Encode(&UpdateTaskStruct{ProjectId: task.ProjectId, Title: task.Title, Description: task.Description, Due_date: task.Due_date, Status: task.Status, Priority: task.Priority})
 }
 
-func (h *AuthHandler) DeleteTask(w http.ResponseWriter, r *http.Request){
-	if r.Method!=http.MethodDelete{
-		http.Error(w,"method not allowed",405)
+func (h *AuthHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", 405)
 		return
 	}
 
-	UserId,ok:=r.Context().Value(middleweare.UserIDKey).(int)
-	if !ok{
-		http.Error(w,"error in getting user id",400)
-		return
-	}
-	TaskId,err:= strconv.Atoi(chi.URLParam(r,"id"))
-	if err!=nil{
-		http.Error(w,"error in converting id to int",400)
+	UserId, ok := r.Context().Value(middleweare.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "error in getting user id", 400)
 		return
 	}
 
-	query:=`DELETE FROM tasks WHERE id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)`
-	QueryREsp,err:= h.DB.Exec(query,TaskId,UserId)
-	if err!=nil{
-		http.Error(w,"error in deletiob",500)
-		return
-	}
-	rowDeleted,err:= QueryREsp.RowsAffected()
-	if err!=nil{
-		http.Error(w,"no row was affected",500)
-		return
-	}
-	if rowDeleted==0{
-		http.Error(w,"task wasn't found",404)
+	role, ok := r.Context().Value(middleweare.RoleKey).(string)
+	if !ok {
+		http.Error(w, "error in getting role from contrext", 401)
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
+	TaskId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "error in converting id to int", 400)
+		return
+	}
+
+	var query string
+	args := []interface{}{}
+
+	if role == string(models.AdminRole) {
+		query = `DELETE FROM tasks WHERE id=?`
+		args = append(args, TaskId)
+
+	} else {
+		query = `DELETE FROM tasks WHERE id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)`
+		args = append(args, TaskId, UserId)
+	}
+
+	QueryREsp, err := h.DB.Exec(query, args...)
+	if err != nil {
+		http.Error(w, "error in deletiob", 500)
+		return
+	}
+	rowDeleted, err := QueryREsp.RowsAffected()
+	if err != nil {
+		http.Error(w, "no row was affected", 500)
+		return
+	}
+	if rowDeleted == 0 {
+		http.Error(w, "task wasn't found", 404)
+		return
+	}
+
 	w.WriteHeader(204)
 }

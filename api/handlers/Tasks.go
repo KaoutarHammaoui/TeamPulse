@@ -139,6 +139,19 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	page, errP := strconv.Atoi(r.URL.Query().Get("page"))
+	if errP != nil || page < 1 {
+		page = 1
+	}
+	limit, errL := strconv.Atoi(r.URL.Query().Get("limit"))
+	if errL != nil || limit < 1 {
+		limit = 10
+	}
+	if limit>100{
+		limit=100
+	}
+	offset := (page - 1) * limit
+
 	role, ok := r.Context().Value(middleweare.RoleKey).(string)
 	if !ok {
 		http.Error(w, "error in getting role", 401)
@@ -157,7 +170,7 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 		existQuery = `SELECT id FROM projects WHERE id=?`
 		args = append(args, idFromQuery)
 	} else {
-		existQuery = `SELECT id FROM projects WHERE id=? AND user_id=?`
+		existQuery = `SELECT id FROM projects WHERE id=? AND user_id=? `
 		args = append(args, idFromQuery, UserId)
 	}
 
@@ -167,8 +180,8 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	query := `SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=?`
-	Insertion, err := h.DB.Query(query, idFromQuery)
+	query := `SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=? LIMIT ? OFFSET ?`
+	Insertion, err := h.DB.Query(query, idFromQuery,limit,offset)
 	if err != nil {
 		http.Error(w, "error querying tasks", 500)
 		return
@@ -300,14 +313,14 @@ func (h *AuthHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		}
 		var projectID int
 		var query string
-		QueryArgs:=[]interface{}{}
-		if role==string(models.AdminRole){
-			query=`SELECT id FROM projects WHERE id=?`
-			QueryArgs=append(QueryArgs, prId)
+		QueryArgs := []interface{}{}
+		if role == string(models.AdminRole) {
+			query = `SELECT id FROM projects WHERE id=?`
+			QueryArgs = append(QueryArgs, prId)
 
-		}else{
-			query=`SELECT id FROM projects WHERE id=? AND user_id=?`
-			QueryArgs=append(QueryArgs, prId,UserId)
+		} else {
+			query = `SELECT id FROM projects WHERE id=? AND user_id=?`
+			QueryArgs = append(QueryArgs, prId, UserId)
 		}
 		err := h.DB.QueryRow(query, QueryArgs...).Scan(&projectID)
 		if err != nil {

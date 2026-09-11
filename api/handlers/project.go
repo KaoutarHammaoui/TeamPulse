@@ -87,15 +87,27 @@ func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	page,errQ:=strconv.Atoi(r.URL.Query().Get("page"))
+	if errQ!=nil || page<1{
+		page=1
+	}
+	limit,errL:=strconv.Atoi(r.URL.Query().Get("limit"))
+	if errL!=nil || limit <1{
+		limit=10
+	}
+	if limit>100{
+		limit=100
+	}
+	offset:=(page-1)*limit
 	var query string
 	var resp *sql.Rows
 	var err error
 	if role == string(models.AdminRole) {
-		query = `SELECT id,title,description FROM projects`
-		resp, err = h.DB.Query(query)
+		query = `SELECT id,title,description FROM projects LIMIT ? OFFSET ?`
+		resp, err = h.DB.Query(query,limit,offset)
 	} else {
-		query = `SELECT id,title,description FROM projects WHERE user_id=?`
-		resp, err = h.DB.Query(query, userId)
+		query = `SELECT id,title,description FROM projects WHERE user_id=? LIMIT ? OFFSET ?`
+		resp, err = h.DB.Query(query, userId,limit,offset)
 	}
 
 	if err != nil {

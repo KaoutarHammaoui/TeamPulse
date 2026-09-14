@@ -28,6 +28,7 @@ func main() {
 		Secret: secret,
 	}
 	r := chi.NewRouter()
+	r.Use(middleweare.CORS)
 	r.Post("/register", authHandler.CreateUser)
 	r.Post("/login", authHandler.Login)
 
@@ -41,7 +42,7 @@ func main() {
 		r.Get("/GetProject/{id}", authHandler.GetProject)
 		r.Delete("/DeleteProject/{id}", authHandler.DeleteProject)
 		r.Patch("/UpdateProject/{id}", authHandler.UpdateProject)
-		r.Post("/projects/{projectId}/AddTask", authHandler.CreateTask)
+		r.Post("/AddTask", authHandler.CreateTask)
 		r.Get("/GetTasks", authHandler.GetAllProjectTasks)
 		r.Get("/tasks/{id}", authHandler.GetOneTask)
 		r.Patch("/UpdateTask/{id}", authHandler.UpdateTask)

@@ -15,7 +15,7 @@ import (
 )
 
 type TaskStructure struct {
-	ProjectId   int    `json:"projectid"`
+	ProjectName   string    `json:"projectname"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
@@ -84,17 +84,17 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exists int
+	var projectID int
 	var existQuery string
 	existArgs := []interface{}{}
 	if role == string(models.AdminRole) {
-		existQuery = `SELECT id FROM projects WHERE id=?`
-		existArgs = append(existArgs, TaskCreation.ProjectId)
+		existQuery = `SELECT id FROM projects WHERE title=?`
+		existArgs = append(existArgs, TaskCreation.ProjectName)
 	} else {
-		existQuery = `SELECT id FROM projects WHERE id=? AND user_id=?`
-		existArgs = append(existArgs, TaskCreation.ProjectId, UserID)
+		existQuery = `SELECT id FROM projects WHERE title=? AND user_id=?`
+		existArgs = append(existArgs, TaskCreation.ProjectName, UserID)
 	}
-	err := h.DB.QueryRow(existQuery, existArgs...).Scan(&exists)
+	err := h.DB.QueryRow(existQuery, existArgs...).Scan(&projectID)
 	if err != nil {
 		http.Error(w, "project not found", 404)
 		return
@@ -111,7 +111,7 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		TaskCreation.Due_date = time.Now().AddDate(0, 1, 0).Format("2006-01-02 15:04:05")
 	}
 
-	Insertion, err := h.DB.Exec(query, TaskCreation.ProjectId, TaskCreation.Title, TaskCreation.Description, TaskCreation.Status, TaskCreation.Priority, TaskCreation.Due_date)
+	Insertion, err := h.DB.Exec(query, projectID, TaskCreation.Title, TaskCreation.Description, TaskCreation.Status, TaskCreation.Priority, TaskCreation.Due_date)
 	if err != nil {
 		log.Println("insert error:", err)
 		http.Error(w, "error in insertion", 500)
@@ -124,7 +124,7 @@ func (h *AuthHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
-	json.NewEncoder(w).Encode(TaskStructureResp{ID: int(lastIns), Title: TaskCreation.Title, Description: TaskCreation.Description, Due_date: TaskCreation.Due_date, ProjectId: TaskCreation.ProjectId, Status: TaskCreation.Status, Priority: TaskCreation.Priority})
+	json.NewEncoder(w).Encode(TaskStructureResp{ID: int(lastIns), Title: TaskCreation.Title, Description: TaskCreation.Description, Due_date: TaskCreation.Due_date, ProjectId: projectID, Status: TaskCreation.Status, Priority: TaskCreation.Priority})
 }
 
 func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request) {
@@ -158,6 +158,17 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	validStatuses := map[string]bool{"todo": true, "in_progress": true, "done": true}
+
+	statusQ:=string(r.URL.Query().Get("status"))
+	status:=strings.TrimSpace(statusQ)
+	if status!=""{
+		if !validStatuses[status]{
+			http.Error(w,"invalid status",401)
+			return
+		}
+	}
+
 	idFromQuery, err := strconv.Atoi(r.URL.Query().Get("project_id"))
 	if err != nil {
 		http.Error(w, "error in converting the user id to int", 500)
@@ -180,8 +191,17 @@ func (h *AuthHandler) GetAllProjectTasks(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	query := `SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=? LIMIT ? OFFSET ?`
-	Insertion, err := h.DB.Query(query, idFromQuery,limit,offset)
+	query := `SELECT id,title,description,status,priority,due_date FROM tasks WHERE project_id=?`
+	QueryArgs:=[]interface{}{idFromQuery}
+	if status!=""{
+		query+=` AND status=?`
+		QueryArgs=append(QueryArgs, status)
+	}
+
+	query+=` LIMIT ? OFFSET ?`
+	QueryArgs=append(QueryArgs, limit,offset)
+
+	Insertion, err := h.DB.Query(query,QueryArgs...)
 	if err != nil {
 		http.Error(w, "error querying tasks", 500)
 		return

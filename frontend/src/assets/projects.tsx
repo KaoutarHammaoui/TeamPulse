@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 interface Project {
     id: number
     title: string
-    description:string 
+    description: string 
 }
 
 export function Projects() {
@@ -43,13 +43,16 @@ export function Projects() {
         navigate('/AddProject')
     }
 
+    const ProjectDetail=(pr:Project) => {
+        navigate(`/ProjectDetails/${pr.id}`)
+    }
     return (
         <div>
             <button onClick={AddProject}>Add new Project</button>
             Projets
             <table border={1}>
                 {projects.map((pr) => (
-                    <tr key={pr.id}><td>{pr.title}</td>
+                    <tr key={pr.id}><td onClick={()=>{ProjectDetail(pr)}} >{pr.title}</td>
                         <td>Tasks</td>
                         <td onClick={()=>Editroject(pr)}>Edit</td>
                         <td>Delete</td>

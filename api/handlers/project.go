@@ -22,6 +22,7 @@ type ProjectResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	CreatedAt string `json:"created_at"`
 }
 
 type UpdateProjectStruct struct {
@@ -166,20 +167,20 @@ func (h *AuthHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 	var Id int
 	var title string
 	var description string
-
+	var createdAt string
 	if role == string(models.AdminRole) {
-		query := `SELECT id,title,description FROM projects WHERE id=?`
-		respErr = h.DB.QueryRow(query, idParam).Scan(&Id, &title, &description)
+		query := `SELECT id,title,description,created_at FROM projects WHERE id=?`
+		respErr = h.DB.QueryRow(query, idParam).Scan(&Id, &title, &description,&createdAt)
 	} else {
-		query := `SELECT id,title,description FROM projects WHERE id=? AND user_id=?`
-		respErr = h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description)
+		query := `SELECT id,title,description,created_at FROM projects WHERE id=? AND user_id=?`
+		respErr = h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description,&createdAt)
 	}
 
 	if respErr != nil {
 		http.Error(w, "Project doesn't exist", 404)
 		return
 	}
-	Project := ProjectResponse{ID: int64(Id), Title: title, Description: description}
+	Project := ProjectResponse{ID: int64(Id), Title: title, Description: description,CreatedAt: createdAt}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)

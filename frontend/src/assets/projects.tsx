@@ -1,15 +1,24 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+
+
+interface Project {
+    id: number
+    title: string
+    description:string 
+}
 
 export function Projects() {
-    const [error, setError] = useState('')
-    const [projects, setProjects] = useState([]);
 
+    const navigate = useNavigate();
+    const [error, setError] = useState('')
+    const [projects, setProjects] = useState <Project[]> ([]);
     useEffect(() => {
         const DAtaFetching = async () => {
             const response = await fetch('http://localhost:8080/GetProjects', {
                 method: "GET",
                 headers: {
-                    "'Content-Type": "application/json",
+                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${localStorage.getItem('token')}`
                 }
             })
@@ -19,21 +28,36 @@ export function Projects() {
                 return
             }
             const data = await response.json()
-            setProjects(data)
+            setProjects(data.reverse() ?? [])
         }
         DAtaFetching()
     }, [])
+
+    
+
+    const Editroject = (pr : Project) => {
+        navigate(`/editProject/${pr.id}`)
+    }
+
+    const AddProject = () => {
+        navigate('/AddProject')
+    }
+
     return (
         <div>
+            <button onClick={AddProject}>Add new Project</button>
             Projets
-            <table>
+            <table border={1}>
                 {projects.map((pr) => (
-                    <tr key={pr.id}> {pr.title} </tr>
+                    <tr key={pr.id}><td>{pr.title}</td>
+                        <td>Tasks</td>
+                        <td onClick={()=>Editroject(pr)}>Edit</td>
+                        <td>Delete</td>
+
+                    </tr>
                 ))}
             </table>
-            {projects}.map((k,val)=>{val.name})
-            <input type="text" onChange={(e) => setError(e.target.value)} value={error} hidden />
-
+            {error && <p>{error}</p>}
         </div>
     )
 }

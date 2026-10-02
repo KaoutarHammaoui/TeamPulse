@@ -46,6 +46,9 @@ export function Projects() {
     const ProjectDetail=(pr:Project) => {
         navigate(`/ProjectDetails/${pr.id}`)
     }
+    const DeletePR = (pr: Project) => {
+        navigate(`/DeletePR/${pr.id}`);
+    }
     return (
         <div>
             <button onClick={AddProject}>Add new Project</button>
@@ -55,7 +58,7 @@ export function Projects() {
                     <tr key={pr.id}><td onClick={()=>{ProjectDetail(pr)}} >{pr.title}</td>
                         <td>Tasks</td>
                         <td onClick={()=>Editroject(pr)}>Edit</td>
-                        <td>Delete</td>
+                        <td onClick={()=>DeletePR(pr)}>Delete</td>
 
                     </tr>
                 ))}

@@ -6,6 +6,9 @@ import { Editroject } from './assets/Editroject.js'
 import { Projects } from './assets/projects.js'
 import { ProjectDetails } from './assets/ProjectDetails.js'
 import { DeletePR } from './assets/ProjectDeletion.js'
+import { ProjectTasks } from './assets/ProjectTasks.js'
+import { AddTask } from './assets/AddTask.js'
+import { EditTask } from './assets/editTask.js'
 
 function App() {
 
@@ -18,7 +21,10 @@ function App() {
         <Route path="AddProject" element={<AddProject />} />
         <Route path="/editProject/:id" element={<Editroject />} />
         <Route path="/ProjectDetails/:id" element={<ProjectDetails />} />
-        <Route path='DeletePR/:id' element={<DeletePR/>} />
+        <Route path="DeletePR/:id" element={<DeletePR />} />
+        <Route path="ProjectTasks/:id" element={<ProjectTasks />} />
+        <Route path="/AddTask/:id" element={<AddTask />} />
+        <Route path='/editTask/:id' element={<EditTask/>} />
       </Routes>
     </BrowserRouter>
   );

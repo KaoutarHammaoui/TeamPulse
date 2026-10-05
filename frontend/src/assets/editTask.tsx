@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export function EditTask() {
-  const { id } = useParams(); // this is the TASK's id
+  const { id } = useParams(); 
   const [error, setError] = useState("");
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("low");
   const [success, setSuccess] = useState("");
-  const [projectId, setProjectId] = useState(null); // so we can navigate back correctly
+  const [projectId, setProjectId] = useState(null); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function EditTask() {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
         title: title,
@@ -77,6 +77,7 @@ export function EditTask() {
         <button type="submit">Edit</button>
       </form>
       edit a task
+    <button onClick={()=>{navigate(`/ProjectTasks/${projectId}`);}} >Cancel</button>
       {error && <p>{error}</p>}
       {success && <p>{success}</p>}
     </div>

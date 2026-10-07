@@ -49,6 +49,7 @@ func main() {
 		r.Delete("/DeleteTask/{id}", authHandler.DeleteTask)
 		r.Patch("/UpdateUserRole/{id}",authHandler.UpdatingRole)
 		r.Get("/Users",authHandler.GetAllUsers)
+		r.Get("/GetUser/{id}",authHandler.GetUser)
 	})
 
 	log.Println("server is running on :8080")

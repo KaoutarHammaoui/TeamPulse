@@ -10,6 +10,8 @@ import { ProjectTasks } from './assets/ProjectTasks.js'
 import { AddTask } from './assets/AddTask.js'
 import { EditTask } from './assets/editTask.js'
 import { DEleteTask } from './assets/delete.js'
+import { UpdateRole } from './assets/UpdateRole.js'
+import { GetUsers } from './assets/Users.js'
 
 function App() {
 
@@ -26,7 +28,9 @@ function App() {
         <Route path="ProjectTasks/:id" element={<ProjectTasks />} />
         <Route path="/AddTask/:id" element={<AddTask />} />
         <Route path='/editTask/:id' element={<EditTask />} />
-        <Route path='/deleteTask/:id' element={<DEleteTask/>} />
+        <Route path='/deleteTask/:id' element={<DEleteTask />} />
+        <Route path='/Users' element={<GetUsers/>}/>
+        <Route path='/UpdateRole/:id' element={<UpdateRole/>} />
       </Routes>
     </BrowserRouter>
   );

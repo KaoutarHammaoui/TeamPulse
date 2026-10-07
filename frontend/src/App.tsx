@@ -29,7 +29,7 @@ function App() {
         <Route path="/AddTask/:id" element={<AddTask />} />
         <Route path='/editTask/:id' element={<EditTask />} />
         <Route path='/deleteTask/:id' element={<DEleteTask />} />
-        <Route path='/Users' element={<GetUsers/>}/>
+        <Route path='/Users' element={<GetUsers />} />
         <Route path='/UpdateRole/:id' element={<UpdateRole/>} />
       </Routes>
     </BrowserRouter>

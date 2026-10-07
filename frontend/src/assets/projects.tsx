@@ -56,8 +56,9 @@ export function Projects() {
 
   return (
     <div>
+      <button onClick={()=>{navigate('/logout')}}>Logout</button>
       <button onClick={AddProject}>Add new Project</button>
-      <button onClick={Users}>Update a role</button>
+      <button onClick={Users}>Users</button>
       Projets
       <table border={1}>
         {projects.map((pr) => (

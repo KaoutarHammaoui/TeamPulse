@@ -12,6 +12,7 @@ import { EditTask } from './assets/editTask.js'
 import { DEleteTask } from './assets/delete.js'
 import { UpdateRole } from './assets/UpdateRole.js'
 import { GetUsers } from './assets/Users.js'
+import { Logout } from './assets/logout.js'
 
 function App() {
 
@@ -30,7 +31,8 @@ function App() {
         <Route path='/editTask/:id' element={<EditTask />} />
         <Route path='/deleteTask/:id' element={<DEleteTask />} />
         <Route path='/Users' element={<GetUsers />} />
-        <Route path='/UpdateRole/:id' element={<UpdateRole/>} />
+        <Route path='/UpdateRole/:id' element={<UpdateRole />} />
+        <Route path='/logout' element={<Logout />} />
       </Routes>
     </BrowserRouter>
   );

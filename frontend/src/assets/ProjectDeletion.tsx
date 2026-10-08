@@ -26,18 +26,12 @@ export function DeletePR() {
         }
   
     return (
-      <div>
-            <p>Are u sure u wanna delete this project?</p>
-            <button onClick={deletion}>YES</button>
-        <button
-          onClick={() => {
-            navigate("/projects");
-          }}
-        >
-          Cancel
-            </button>
-            {error && <p>{error}</p>}
-            {success && <p>{success}</p> }
-      </div>
+      <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="delete-project-title">
+        <section className="modal-card modal-card-danger">
+          <div className="danger-mark" aria-hidden="true">!</div><p className="eyebrow">Permanent action</p><h2 id="delete-project-title">Delete this project?</h2><p className="modal-description">Everything inside this project will be removed. This cannot be undone.</p>
+          {error && <p className="form-error" role="alert">{error}</p>}{success && <p className="success" role="status">{success}</p>}
+          <div className="modal-actions"><button className="button-quiet" type="button" onClick={() => navigate('/projects')}>Keep project</button><button className="button-danger" type="button" onClick={deletion}>Delete project</button></div>
+        </section>
+      </main>
     );
 }

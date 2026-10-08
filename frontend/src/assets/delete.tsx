@@ -44,13 +44,19 @@ export function DEleteTask() {
         }, 3000);
     }
     return (
-        <div>
-            deletion page
-            <p>r u sure u wanna delete this task?</p>
-            <button onClick={()=>{DeleteTask()}}>YES</button>
-            <button onClick={() => { navigate(`/ProjectTasks/${prId}`)}} >Not</button>
-            {error && <p>{error}</p>}
-            {success && <p>{ success}</p> }
-        </div>
+        <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="delete-task-title">
+            <section className="modal-card modal-card-danger">
+                <div className="danger-mark" aria-hidden="true">!</div>
+                <p className="eyebrow">This action cannot be undone</p>
+                <h2 id="delete-task-title">Delete this task?</h2>
+                <p className="modal-description">The task and its details will be permanently removed from this project.</p>
+                {error && <p className="form-error" role="alert">{error}</p>}
+                {success && <p className="success" role="status">{success}</p>}
+                <div className="modal-actions">
+                    <button className="button-quiet" type="button" onClick={() => navigate(`/ProjectTasks/${prId}`)}>Keep task</button>
+                    <button className="button-danger" type="button" onClick={DeleteTask}>Delete task</button>
+                </div>
+            </section>
+        </main>
     )
 }

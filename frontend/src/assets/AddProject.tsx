@@ -29,29 +29,16 @@ export function AddProject() {
   };
 
   return (
-    <div>
-          <p>Add a new Project</p>
-          <button onClick={()=>{navigate('/projects')}}>Go Back</button>
-      <form action="" onSubmit={AddProjectInfo}>
-        <input
-          type="text"
-          name="title"
-          id="title"
-          placeholder="title"
-          onChange={(e) => setTitle(e.target.value)}
-        /> <br />
-        
-        <textarea
-          name="desc"
-          id="desc"
-          placeholder="description"
-          onChange={(e) => setDesc(e.target.value)}
-        />
-        <br />
-        <button type="submit">Add</button>
-          </form>
-          
-          {error && <p>{error}</p>}
-    </div>
+    <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="add-project-title">
+      <section className="modal-card">
+        <div className="modal-heading"><div><p className="eyebrow">New workspace item</p><h2 id="add-project-title">Create a project</h2><p className="modal-description">Give your team a clear place to collect the work.</p></div><button className="modal-close" type="button" aria-label="Close" onClick={() => navigate('/projects')}>×</button></div>
+        <form className="modal-form" onSubmit={AddProjectInfo}>
+          <div className="field"><label htmlFor="title">Project title</label><input type="text" name="title" id="title" placeholder="e.g. Website refresh" onChange={(e) => setTitle(e.target.value)} required /></div>
+          <div className="field"><label htmlFor="desc">Description</label><textarea name="desc" id="desc" placeholder="What is this project about?" onChange={(e) => setDesc(e.target.value)} /></div>
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <div className="modal-actions"><button className="button-quiet" type="button" onClick={() => navigate('/projects')}>Cancel</button><button type="submit">Create project</button></div>
+        </form>
+      </section>
+    </main>
   );
 }

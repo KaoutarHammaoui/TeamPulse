@@ -29,13 +29,29 @@ export function Login() {
         }
     }
     return (
-        <div>
-            <form action="" onSubmit={handleSubmit}>
-                <input type="text" onChange={(e) => setEmail(e.target.value)} value={email} /> <br />
-                <input type="password" onChange={(e) => setPassword(e.target.value)} value={password} /> <br />
-                <button type="submit" >login</button>
+        <main className="login-page">
+            <section className="login-intro">
+                <span className="login-mark">TM</span>
+                <p className="eyebrow">Team momentum</p>
+                <h1>Make good work feel effortless.</h1>
+                <p className="subtitle">A calm command centre for projects, tasks, and the people moving everything forward.</p>
+            </section>
+            <form className="login-form" onSubmit={handleSubmit}>
+                <div>
+                    <p className="eyebrow">Welcome back</p>
+                    <h2>Sign in to your workspace</h2>
+                </div>
+                <div className="field">
+                    <label htmlFor="email">Email address</label>
+                    <input id="email" type="email" autoComplete="email" placeholder="you@company.com" onChange={(e) => setEmail(e.target.value)} value={email} required />
+                </div>
+                <div className="field">
+                    <label htmlFor="password">Password</label>
+                    <input id="password" type="password" autoComplete="current-password" placeholder="Enter your password" onChange={(e) => setPassword(e.target.value)} value={password} required />
+                </div>
+                {error && <p className="form-error" role="alert">{error}</p>}
+                <button type="submit">Enter workspace <span aria-hidden="true">-&gt;</span></button>
             </form>
-            {error && <p> {error} </p> }
-        </div>
+        </main>
     )
 }

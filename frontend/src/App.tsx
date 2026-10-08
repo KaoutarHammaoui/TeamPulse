@@ -19,7 +19,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
+      <div className="app-frame">
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Login />} />
         <Route path="/projects" element={<ProtectedRoute> <Projects /> </ProtectedRoute>} />
@@ -34,7 +35,14 @@ function App() {
         <Route path='/Users' element={<ProtectedRoute> <GetUsers /> </ProtectedRoute>} />
         <Route path='/UpdateRole/:id' element={<ProtectedRoute> <UpdateRole /> </ProtectedRoute>} />
         <Route path='/logout' element={<ProtectedRoute> <Logout /></ProtectedRoute>} />
-      </Routes>
+        </Routes>
+        <footer className="site-footer">
+          <span>Made by</span>
+          <a href="https://github.com/defaltastra" target="_blank" rel="noreferrer">defaltastra</a>
+          <span className="footer-dot">and</span>
+          <a href="https://github.com/KaoutarHammaoui" target="_blank" rel="noreferrer">KaoutarHammaoui</a>
+        </footer>
+      </div>
     </BrowserRouter>
   );
 }

@@ -55,34 +55,34 @@ export function Projects() {
   };
 
   return (
-    <div>
-      <button onClick={()=>{navigate('/logout')}}>Logout</button>
-      <button onClick={AddProject}>Add new Project</button>
-      <button onClick={Users}>Users</button>
-      Projets
-      <table border={1}>
+    <main className="page-shell">
+      <header className="page-header">
+        <div>
+          <p className="eyebrow">Workspace overview</p>
+          <h1>Projects</h1>
+          <p className="subtitle">Keep the whole team moving in the same direction.</p>
+        </div>
+        <div className="page-actions">
+          <button onClick={AddProject}>+ New project</button>
+          <button onClick={Users}>Users</button>
+          <button onClick={()=>{navigate('/logout')}}>Logout</button>
+        </div>
+      </header>
+      <table>
+        <thead><tr><th>Project</th><th>Tasks</th><th>Edit</th><th>Delete</th></tr></thead>
+        <tbody>
         {projects.map((pr) => (
           <tr key={pr.id}>
-            <td
-              onClick={() => {
-                ProjectDetail(pr);
-              }}
-            >
-              {pr.title}
-            </td>
-            <td
-              onClick={() => {
-                ProjectTasks(pr);
-              }}
-            >
-              Tasks
-            </td>
-            <td onClick={() => Editroject(pr)}>Edit</td>
-            <td onClick={() => DeletePR(pr)}>Delete</td>
+            <td>{pr.title}</td>
+            <td><button className="table-action" onClick={() => ProjectTasks(pr)}>Tasks</button></td>
+            <td><button className="table-action" onClick={() => Editroject(pr)}>Edit</button></td>
+            <td><button className="table-action table-action-danger" onClick={() => DeletePR(pr)}>Delete</button></td>
           </tr>
         ))}
+        </tbody>
       </table>
-      {error && <p>{error}</p>}
-    </div>
+      {!projects.length && !error && <div className="panel"><h3>No projects yet</h3><p className="subtitle">Create your first project to give your team a place to focus.</p></div>}
+      {error && <p className="form-error" role="alert">{error}</p>}
+    </main>
   );
 }

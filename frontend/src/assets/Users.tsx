@@ -30,30 +30,27 @@ export function GetUsers() {
   }, []);
 
   return (
-    <div>
-      <table border={1}>
+    <main className="page-shell">
+      <header className="page-header">
+        <div>
+          <p className="eyebrow">Workspace access</p>
+          <h1>Users</h1>
+          <p className="subtitle">Manage the people and permissions connected to this workspace.</p>
+        </div>
+        <button onClick={() => navigate("/projects")}>Back to projects</button>
+      </header>
+      <table>
+        <thead><tr><th>User</th><th>Actions</th></tr></thead>
+        <tbody>
         {data.map((us) => (
           <tr key={us.id}>
             <td> {us.username} </td>
-            <td
-              onClick={() => {
-                navigate(`/UpdateRole/${us.id}`);
-              }}
-            >
-              Update Role
-            </td>
+            <td><button className="table-action" onClick={() => navigate(`/UpdateRole/${us.id}`)}>Update role</button></td>
           </tr>
         ))}
+        </tbody>
       </table>
-      <button
-        onClick={() => {
-          navigate("/projects");
-        }}
-      >
-        Go Back
-      </button>
-      {error && <p>{error}</p>}
-      all users
-    </div>
+      {error && <p className="form-error" role="alert">{error}</p>}
+    </main>
   );
 }

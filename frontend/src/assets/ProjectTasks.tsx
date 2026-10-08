@@ -51,22 +51,24 @@ export function ProjectTasks() {
         Add new Task
       </button>
       <button onClick={() => navigate("/projects")}>Go Back</button>
-      <table border={1}>
-        <tr>
-          <td>Task</td>
-          <td>Status</td>
-          <td>Priority</td>
-          <td colSpan={2}>Actions</td>
-        </tr>
+      <table>
+        <thead><tr>
+          <th>Task</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th colSpan={2}>Actions</th>
+        </tr></thead>
+        <tbody>
         {tasks.map((t) => (
           <tr key={t.id}>
             <td>{t.title}</td>
             <td>{t.status}</td>
-                <td>{t.priority}</td>
-                <td onClick={() => { navigate(`/editTask/${t.id}`) }}>Edit</td>
-                <td onClick={()=>{navigate(`/deleteTask/${t.id}`)}}>Delete</td>
+            <td>{t.priority}</td>
+            <td><button className="table-action" onClick={() => navigate(`/editTask/${t.id}`)}>Edit</button></td>
+            <td><button className="table-action table-action-danger" onClick={() => navigate(`/deleteTask/${t.id}`)}>Delete</button></td>
           </tr>
         ))}
+        </tbody>
       </table>
       {error && <p>{error}</p>}
     </div>

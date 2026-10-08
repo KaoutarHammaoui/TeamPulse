@@ -58,16 +58,11 @@ export function UpdateRole() {
   };
 
     return (
-        <div>
-            update a role page
-            <input type="text" value={username} readOnly />  
-            <select name="" id="" value={role} onChange={(e)=>{setRole(e.target.value)}}>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-            </select>
-            <button onClick={UpdateRoleFunc}>Update</button>
-            {error && <p>{error}</p>}
-            {sucess && <p>{sucess}</p>  }
-      </div>
+        <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="role-title">
+          <section className="modal-card">
+            <div className="modal-heading"><div><p className="eyebrow">Team permissions</p><h2 id="role-title">Update role</h2><p className="modal-description">Choose the level of access this teammate should have.</p></div><button className="modal-close" type="button" aria-label="Close" onClick={() => navigate('/Users')}>×</button></div>
+            <div className="modal-form"><div className="field"><label htmlFor="role-user">Teammate</label><input id="role-user" type="text" value={username} readOnly /></div><div className="field"><label htmlFor="role-select">Role</label><select id="role-select" value={role} onChange={(e)=>setRole(e.target.value)}><option value="admin">Admin</option><option value="user">User</option></select></div>{error && <p className="form-error" role="alert">{error}</p>}{sucess && <p className="success" role="status">{sucess}</p>}<div className="modal-actions"><button className="button-quiet" type="button" onClick={() => navigate('/Users')}>Cancel</button><button type="button" onClick={UpdateRoleFunc}>Update role</button></div></div>
+          </section>
+        </main>
   );
 }

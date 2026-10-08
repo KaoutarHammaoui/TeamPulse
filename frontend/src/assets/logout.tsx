@@ -22,17 +22,12 @@ export function Logout() {
   };
 
   return (
-    <div>
-      <p>U sure u wanna leave</p>
-      <button onClick={LogoutFunc}>YES</button>
-      <button
-        onClick={() => {
-          navigate("/projects");
-        }}
-      >
-        NO
-      </button>
-      {error && <p>{error}</p>}
-    </div>
+    <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+      <section className="modal-card modal-card-danger">
+        <div className="danger-mark" aria-hidden="true">↗</div><p className="eyebrow">Session</p><h2 id="logout-title">Leave your workspace?</h2><p className="modal-description">You can sign back in whenever you are ready to pick up where you left off.</p>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        <div className="modal-actions"><button className="button-quiet" type="button" onClick={() => navigate('/projects')}>Stay here</button><button className="button-danger" type="button" onClick={LogoutFunc}>Log out</button></div>
+      </section>
+    </main>
   );
 }

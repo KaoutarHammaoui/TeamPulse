@@ -33,19 +33,12 @@ export function ProjectDetails() {
         resFn()
     },[id])
     return (
-        <div>
-          <button onClick={()=>{navigate('/projects')}}>Go Back</button>
-        {errror && <p> {errror} </p>}
-        {project && (
-                <table border={1}>
-                    <tr><td>Project Name</td> <td>Description</td> <td>Creation Date</td></tr>
-            <tr>
-              <td> {project.title} </td>
-              <td> {project.description} </td>
-              <td> {new Date(project.created_at).toLocaleDateString()}</td>
-            </tr>
-          </table>
-        )}
-      </div>
+        <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="project-details-title">
+          <section className="modal-card">
+            <div className="modal-heading"><div><p className="eyebrow">Project snapshot</p><h2 id="project-details-title">Project details</h2><p className="modal-description">A quick look at the brief and when it was created.</p></div><button className="modal-close" type="button" aria-label="Close" onClick={() => navigate('/projects')}>×</button></div>
+            {errror && <p className="form-error" role="alert">{errror}</p>}
+            {project && <dl className="details-list"><div><dt>Project name</dt><dd>{project.title}</dd></div><div><dt>Description</dt><dd>{project.description || 'No description yet.'}</dd></div><div><dt>Created</dt><dd>{new Date(project.created_at).toLocaleDateString()}</dd></div></dl>}
+          </section>
+        </main>
     );
 }

@@ -57,29 +57,47 @@ export function EditTask() {
   };
 
   return (
-    <div>
-      <form onSubmit={EditFunc}>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="todo">todo</option>
-          <option value="in_progress">in_progress</option>
-          <option value="done">Done</option>
-        </select>
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-          <option value="low">low</option>
-          <option value="medium">medium</option>
-          <option value="high">high</option>
-        </select>
-        <button type="submit">Edit</button>
-      </form>
-      edit a task
-    <button onClick={()=>{navigate(`/ProjectTasks/${projectId}`);}} >Cancel</button>
-      {error && <p>{error}</p>}
-      {success && <p>{success}</p>}
-    </div>
+    <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="edit-task-title">
+      <section className="modal-card">
+        <div className="modal-heading">
+          <div>
+            <p className="eyebrow">Task settings</p>
+            <h2 id="edit-task-title">Edit task</h2>
+            <p className="modal-description">Keep the task details clear so everyone knows what happens next.</p>
+          </div>
+          <button className="modal-close" type="button" aria-label="Close edit task" onClick={() => navigate(projectId ? `/ProjectTasks/${projectId}` : "/projects")}>×</button>
+        </div>
+        <form className="modal-form" onSubmit={EditFunc}>
+          <div className="field">
+            <label htmlFor="task-title">Task title</label>
+            <input id="task-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          </div>
+          <div className="modal-fields">
+            <div className="field">
+              <label htmlFor="task-status">Status</label>
+              <select id="task-status" value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="todo">To do</option>
+                <option value="in_progress">In progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="task-priority">Priority</label>
+              <select id="task-priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+          {error && <p className="form-error" role="alert">{error}</p>}
+          {success && <p className="success" role="status">{success}</p>}
+          <div className="modal-actions">
+            <button className="button-quiet" type="button" onClick={() => navigate(projectId ? `/ProjectTasks/${projectId}` : "/projects")}>Cancel</button>
+            <button type="submit">Save changes</button>
+          </div>
+        </form>
+      </section>
+    </main>
   );
 }

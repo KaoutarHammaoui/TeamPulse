@@ -49,21 +49,17 @@ export function Editroject() {
     }, 3000);
   }
     return (
-      <div>
-        <form action="" onSubmit={SubmitEdit}>
-          <input type="text" name="" id="" value={title} onChange={(e)=>{setTitle(e.target.value)}} /> <br />
-          <textarea id="" value={desc} onChange={(e)=>{setDesc(e.target.value)}}/>
-          <button type="submit">Edit</button>
-        </form>
-
-        <button
-          onClick={() => {
-            navigate("/projects");
-          }}
-        >Cancel
-        </button>
-        {error && <p> {error} </p>}
-        {msgOnSuccess && <p>{ msgOnSuccess}</p> }
-      </div>
+      <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="edit-project-title">
+        <section className="modal-card">
+          <div className="modal-heading"><div><p className="eyebrow">Project settings</p><h2 id="edit-project-title">Edit project</h2><p className="modal-description">Shape the project brief as the work evolves.</p></div><button className="modal-close" type="button" aria-label="Close" onClick={() => navigate('/projects')}>×</button></div>
+          <form className="modal-form" onSubmit={SubmitEdit}>
+            <div className="field"><label htmlFor="project-title">Project title</label><input type="text" id="project-title" value={title} onChange={(e)=>setTitle(e.target.value)} required /></div>
+            <div className="field"><label htmlFor="project-description">Description</label><textarea id="project-description" value={desc} onChange={(e)=>setDesc(e.target.value)} /></div>
+            {error && <p className="form-error" role="alert">{error}</p>}
+            {msgOnSuccess && <p className="success" role="status">{msgOnSuccess}</p>}
+            <div className="modal-actions"><button className="button-quiet" type="button" onClick={() => navigate('/projects')}>Cancel</button><button type="submit">Save changes</button></div>
+          </form>
+        </section>
+      </main>
     );
 }

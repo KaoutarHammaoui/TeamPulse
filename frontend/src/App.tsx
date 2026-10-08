@@ -13,6 +13,7 @@ import { DEleteTask } from './assets/delete.js'
 import { UpdateRole } from './assets/UpdateRole.js'
 import { GetUsers } from './assets/Users.js'
 import { Logout } from './assets/logout.js'
+import { ProtectedRoute } from './assets/ProtectedRoutes.js'
 
 function App() {
 
@@ -21,18 +22,18 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Login />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="AddProject" element={<AddProject />} />
-        <Route path="/editProject/:id" element={<Editroject />} />
-        <Route path="/ProjectDetails/:id" element={<ProjectDetails />} />
-        <Route path="DeletePR/:id" element={<DeletePR />} />
-        <Route path="ProjectTasks/:id" element={<ProjectTasks />} />
-        <Route path="/AddTask/:id" element={<AddTask />} />
-        <Route path='/editTask/:id' element={<EditTask />} />
-        <Route path='/deleteTask/:id' element={<DEleteTask />} />
-        <Route path='/Users' element={<GetUsers />} />
-        <Route path='/UpdateRole/:id' element={<UpdateRole />} />
-        <Route path='/logout' element={<Logout />} />
+        <Route path="/projects" element={<ProtectedRoute> <Projects /> </ProtectedRoute>} />
+        <Route path="AddProject" element={<ProtectedRoute> <AddProject /></ProtectedRoute>} />
+        <Route path="/editProject/:id" element={<ProtectedRoute> <Editroject /></ProtectedRoute>} />
+        <Route path="/ProjectDetails/:id" element={ <ProtectedRoute>  <ProjectDetails /> </ProtectedRoute> } />
+        <Route path="DeletePR/:id" element={<ProtectedRoute>  <DeletePR /> </ProtectedRoute>} />
+        <Route path="ProjectTasks/:id" element={<ProtectedRoute> <ProjectTasks /> </ProtectedRoute>} />
+        <Route path="/AddTask/:id" element={<ProtectedRoute> <AddTask /> </ProtectedRoute>} />
+        <Route path='/editTask/:id' element={<ProtectedRoute> <EditTask /> </ProtectedRoute>} />
+        <Route path='/deleteTask/:id' element={<ProtectedRoute> <DEleteTask /> </ProtectedRoute>} />
+        <Route path='/Users' element={<ProtectedRoute> <GetUsers /> </ProtectedRoute>} />
+        <Route path='/UpdateRole/:id' element={<ProtectedRoute> <UpdateRole /> </ProtectedRoute>} />
+        <Route path='/logout' element={<ProtectedRoute> <Logout /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

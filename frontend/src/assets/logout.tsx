@@ -18,7 +18,7 @@ export function Logout() {
       return;
     }
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/login",{replace:true});
   };
 
   return (

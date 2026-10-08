@@ -32,10 +32,10 @@ export function Login() {
         <div>
             <form action="" onSubmit={handleSubmit}>
                 <input type="text" onChange={(e) => setEmail(e.target.value)} value={email} /> <br />
-                <input type="" onChange={(e) => setPassword(e.target.value)} value={password} /> <br />
-                <input type="text" onChange={(e) => setError(e.target.value)} value={error} hidden />
+                <input type="password" onChange={(e) => setPassword(e.target.value)} value={password} /> <br />
                 <button type="submit" >login</button>
             </form>
+            {error && <p> {error} </p> }
         </div>
     )
 }

@@ -1,8 +1,8 @@
-# Team Momentum
+# TeamPulse
 
 A focused project and task workspace for teams who want their next step to stay visible.
 
-![Team Momentum preview](public/images/image.png)
+![TeamPulse preview](frontend/public/images/image.png)
 
 ## Run locally
 

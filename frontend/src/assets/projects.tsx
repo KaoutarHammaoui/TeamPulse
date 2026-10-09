@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ProjectTasks } from "./ProjectTasks.js";
 
 interface Project {
   id: number;
@@ -11,6 +12,7 @@ export function Projects() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [taskProject, setTaskProject] = useState<Project | null>(null);
   useEffect(() => {
     const DAtaFetching = async () => {
       const response = await fetch("http://localhost:8080/GetProjects", {
@@ -46,8 +48,8 @@ export function Projects() {
     navigate(`/DeletePR/${pr.id}`);
   };
 
-  const ProjectTasks = (pr: Project) => {
-    navigate(`/ProjectTasks/${pr.id}`);
+  const openProjectTasks = (pr: Project) => {
+    setTaskProject(pr);
   };
 
   const Users = () => {
@@ -74,7 +76,7 @@ export function Projects() {
         {projects.map((pr) => (
           <tr key={pr.id}>
             <td>{pr.title}</td>
-            <td><button className="table-action" onClick={() => ProjectTasks(pr)}>Tasks</button></td>
+            <td><button className="table-action" onClick={() => openProjectTasks(pr)}>Tasks</button></td>
             <td><button className="table-action" onClick={() => Editroject(pr)}>Edit</button></td>
             <td><button className="table-action table-action-danger" onClick={() => DeletePR(pr)}>Delete</button></td>
           </tr>
@@ -83,6 +85,17 @@ export function Projects() {
       </table>
       {!projects.length && !error && <div className="panel"><h3>No projects yet</h3><p className="subtitle">Create your first project to give your team a place to focus.</p></div>}
       {error && <p className="form-error" role="alert">{error}</p>}
+      {taskProject && (
+        <main className="modal-page" role="dialog" aria-modal="true" aria-labelledby="project-tasks-title" onMouseDown={(event) => event.target === event.currentTarget && setTaskProject(null)}>
+          <section className="tasks-modal-card">
+            <div className="modal-heading tasks-modal-heading">
+              <div><p className="eyebrow">Project workspace</p><h2 id="project-tasks-title">{taskProject.title} tasks</h2><p className="modal-description">Plan, prioritize, and keep the next steps visible.</p></div>
+              <button className="modal-close" type="button" aria-label="Close project tasks" onClick={() => setTaskProject(null)}>×</button>
+            </div>
+            <ProjectTasks projectId={taskProject.id} onClose={() => setTaskProject(null)} />
+          </section>
+        </main>
+      )}
     </main>
   );
 }

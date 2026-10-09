@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 type User = {
   id: number;
   username: string;
+  role: string;
 };
 
 export function GetUsers() {
@@ -37,14 +38,18 @@ export function GetUsers() {
           <h1>Users</h1>
           <p className="subtitle">Manage the people and permissions connected to this workspace.</p>
         </div>
-        <button onClick={() => navigate("/projects")}>Back to projects</button>
+        <div className="page-actions">
+          <button onClick={() => navigate("/projects")}>Back to projects</button>
+          <button onClick={() => navigate("/logout")}>Logout</button>
+        </div>
       </header>
       <table>
-        <thead><tr><th>User</th><th>Actions</th></tr></thead>
+        <thead><tr><th>User</th><th>Role</th><th>Actions</th></tr></thead>
         <tbody>
         {data.map((us) => (
           <tr key={us.id}>
             <td> {us.username} </td>
+            <td><span className={`role-badge role-${us.role}`}>{us.role}</span></td>
             <td><button className="table-action" onClick={() => navigate(`/UpdateRole/${us.id}`)}>Update role</button></td>
           </tr>
         ))}

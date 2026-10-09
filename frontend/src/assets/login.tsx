@@ -31,8 +31,8 @@ export function Login() {
     return (
         <main className="login-page">
             <section className="login-intro">
-                <span className="login-mark">TM</span>
-                <p className="eyebrow">Team momentum</p>
+                <span className="login-mark">TP</span>
+                <p className="eyebrow">TeamPulse</p>
                 <h1>Make good work feel effortless.</h1>
                 <p className="subtitle">A calm command centre for projects, tasks, and the people moving everything forward.</p>
             </section>

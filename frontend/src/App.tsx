@@ -14,6 +14,7 @@ import { UpdateRole } from './assets/UpdateRole.js'
 import { GetUsers } from './assets/Users.js'
 import { Logout } from './assets/logout.js'
 import { ProtectedRoute } from './assets/ProtectedRoutes.js'
+import { Register } from './assets/Register.js'
 
 function App() {
 
@@ -22,7 +23,8 @@ function App() {
       <div className="app-frame">
         <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Login />} />
+          <Route path="/" element={<Login />} />
+          <Route path='/register' element={<Register/>}/>
         <Route path="/projects" element={<ProtectedRoute> <Projects /> </ProtectedRoute>} />
         <Route path="AddProject" element={<ProtectedRoute> <AddProject /></ProtectedRoute>} />
         <Route path="/editProject/:id" element={<ProtectedRoute> <Editroject /></ProtectedRoute>} />

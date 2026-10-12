@@ -52,6 +52,7 @@ export function Login() {
                 {error && <p className="form-error" role="alert">{error}</p>}
                 <button type="submit">Enter workspace <span aria-hidden="true">-&gt;</span></button>
             </form>
+            <p onClick={()=>{navigate('/register')}}>register</p>
         </main>
     )
 }

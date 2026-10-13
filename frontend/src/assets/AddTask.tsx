@@ -31,7 +31,7 @@ export function AddTask() {
     fetchProjectName();
   }, [id]);
 
-  const AddNewTask = async (e) => {
+  const AddNewTask = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const res = await fetch("http://localhost:8080/AddTask", {
       method: "POST",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export function Login() {
     const [password, setPassword] = useState('');
@@ -51,8 +52,8 @@ export function Login() {
                 </div>
                 {error && <p className="form-error" role="alert">{error}</p>}
                 <button type="submit">Enter workspace <span aria-hidden="true">-&gt;</span></button>
+                <p className="auth-switch">Don't have an account? <Link to="/register">Create an account</Link></p>
             </form>
-            <p onClick={()=>{navigate('/register')}}>register</p>
         </main>
     )
 }

@@ -10,7 +10,7 @@ type User = {
 export function UpdateRole() {
   const { id } = useParams();
   const [error, setError] = useState("");
-    const [data, setData] = useState<User |null>(null);
+    const [, setData] = useState<User |null>(null);
     const [username, setUsername] = useState('');
     const [role, setRole] = useState('');
     const [sucess, setSuccess] = useState("");

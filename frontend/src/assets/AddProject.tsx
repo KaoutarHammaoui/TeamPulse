@@ -8,7 +8,7 @@ export function AddProject() {
     const [desc, setDesc] = useState('');
     const [error,setError]= useState('')
 
-    const AddProjectInfo = async (e) => {
+    const AddProjectInfo = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const res = await fetch("http://localhost:8080/CreateProject", {
           method: "POST",

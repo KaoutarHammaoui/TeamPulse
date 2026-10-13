@@ -29,7 +29,7 @@ export function Editroject() {
     fetchedPr()
   },[id])
 
-  const SubmitEdit = async (e) => {
+  const SubmitEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const res = await fetch(`http://localhost:8080/UpdateProject/${id}`, {
       method: "PATCH",

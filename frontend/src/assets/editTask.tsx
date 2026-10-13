@@ -32,7 +32,7 @@ export function EditTask() {
     fetchTask();
   }, [id]);
 
-  const EditFunc = async (e) => {
+  const EditFunc = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const res = await fetch(`http://localhost:8080/UpdateTask/${id}`, {
       method: "PATCH",

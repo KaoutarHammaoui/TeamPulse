@@ -75,7 +75,7 @@ export function Projects() {
         <tbody>
         {projects.map((pr) => (
           <tr key={pr.id}>
-            <td onClick={()=>{ProjectDetail(pr)}}>{pr.title}</td>
+            <td><button className="project-title-button" type="button" onClick={() => ProjectDetail(pr)}>{pr.title}<span aria-hidden="true">-&gt;</span></button></td>
             <td><button className="table-action" onClick={() => openProjectTasks(pr)}>Tasks</button></td>
             <td><button className="table-action" onClick={() => Editroject(pr)}>Edit</button></td>
             <td><button className="table-action table-action-danger" onClick={() => DeletePR(pr)}>Delete</button></td>

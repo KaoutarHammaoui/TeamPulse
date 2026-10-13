@@ -12,6 +12,10 @@
 .table-action { padding: 8px 14px; font-size: 0.82rem; box-shadow: none; }
 .task-title-button { padding: 0; color: var(--ink); background: transparent; box-shadow: none; font-weight: 700; text-align: left; }
 .task-title-button:hover { color: var(--coral); background: transparent; box-shadow: none; transform: none; }
+.project-title-button { display: inline-flex; align-items: center; gap: 8px; padding: 0; color: var(--ink); background: transparent; box-shadow: none; font-size: 1rem; font-weight: 700; text-align: left; }
+.project-title-button span { color: var(--coral); opacity: 0; transform: translateX(-4px); transition: opacity 0.2s, transform 0.2s; }
+.project-title-button:hover, .project-title-button:focus-visible { color: var(--coral); background: transparent; box-shadow: none; transform: none; }
+.project-title-button:hover span, .project-title-button:focus-visible span { opacity: 1; transform: translateX(0); }
 .tasks-toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
 .priority-badge { display: inline-block; min-width: 68px; padding: 5px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-align: center; text-transform: capitalize; }
 .priority-low { color: #8ce2c0; background: rgba(44, 166, 119, 0.16); border: 1px solid rgba(44, 166, 119, 0.35); }

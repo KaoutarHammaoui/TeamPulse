@@ -1,5 +1,7 @@
 # TeamPulse
 
+🚀 **Live Demo:** [https://teampulse-1.netlify.app/](https://teampulse-1.netlify.app/)
+
 A focused project and task workspace for teams who want their next step to stay visible.
 
 ![TeamPulse preview](frontend/public/images/image.png)

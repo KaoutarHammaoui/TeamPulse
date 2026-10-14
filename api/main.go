@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"log"
 	"net/http"
 	"os"
@@ -13,16 +14,23 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//go:embed schema.sql
+var schema string
+
 func main() {
-	godotenv.Load() // readas .env and makes jwt_secret available via os.getenv
+	_ = godotenv.Load() // readas .env and makes jwt_secret available via os.getenv
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
-	Dbase, err := db.Connect("../app.db")
+	Dbase, err := db.Connect("app.db")
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 	defer Dbase.Close()
+
+	if _, err := Dbase.Exec(schema); err != nil {
+		log.Fatal("failed to initialize database schema: ", err)
+	}
 	authHandler := &handlers.AuthHandler{
 		DB:     Dbase,
 		Secret: secret,
@@ -47,14 +55,20 @@ func main() {
 		r.Get("/tasks/{id}", authHandler.GetOneTask)
 		r.Patch("/UpdateTask/{id}", authHandler.UpdateTask)
 		r.Delete("/DeleteTask/{id}", authHandler.DeleteTask)
-		r.Patch("/UpdateUserRole/{id}",authHandler.UpdatingRole)
-		r.Get("/Users",authHandler.GetAllUsers)
-		r.Get("/GetUser/{id}",authHandler.GetUser)
-		r.Post("/logout",authHandler.Logout)
+		r.Patch("/UpdateUserRole/{id}", authHandler.UpdatingRole)
+		r.Get("/Users", authHandler.GetAllUsers)
+		r.Get("/GetUser/{id}", authHandler.GetUser)
+		r.Post("/logout", authHandler.Logout)
 	})
 
-	log.Println("server is running on :8080")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Println("server is running on :" + port)
+
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
 }

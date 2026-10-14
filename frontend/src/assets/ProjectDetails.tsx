@@ -16,7 +16,7 @@ export function ProjectDetails() {
 
     useEffect(() => {   
         const resFn = async () => {
-            const res = await fetch(`http://localhost:8080/GetProject/${id}`, {
+            const res = await fetch(`https://teampulse.velixir.run/GetProject/${id}`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",

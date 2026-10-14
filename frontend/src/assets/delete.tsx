@@ -10,7 +10,7 @@ export function DEleteTask() {
     // const[data,setDAte]=useState()
     useEffect(() => {
         const fetchPr = async() => {
-            const res = await fetch(`http://localhost:8080/tasks/${id}`, {
+            const res = await fetch(`https://teampulse.velixir.run/tasks/${id}`, {
               method: "GET",
               headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -27,7 +27,7 @@ export function DEleteTask() {
     },[id])
 
     const DeleteTask = async() => {
-        const res = await fetch(`http://localhost:8080/DeleteTask/${id}`, {
+        const res = await fetch(`https://teampulse.velixir.run/DeleteTask/${id}`, {
           method: "DELETE",
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`,

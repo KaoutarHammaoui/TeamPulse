@@ -39,7 +39,7 @@ export function ProjectTasks({ projectId, onClose }: ProjectTasksProps) {
   useEffect(() => {
     const fetchTasks = async () => {
       const res = await fetch(
-        `http://localhost:8080/GetTasks?project_id=${id}`,
+        `https://teampulse.velixir.run/GetTasks?project_id=${id}`,
         {
           method: "GET",
           headers: {
@@ -59,7 +59,7 @@ export function ProjectTasks({ projectId, onClose }: ProjectTasksProps) {
 
   useEffect(() => {
     const fetchProject = async () => {
-      const res = await fetch(`http://localhost:8080/GetProject/${id}`, {
+      const res = await fetch(`https://teampulse.velixir.run/GetProject/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       if (res.ok) {
@@ -92,7 +92,7 @@ export function ProjectTasks({ projectId, onClose }: ProjectTasksProps) {
   };
 
   const refreshTasks = async () => {
-    const res = await fetch(`http://localhost:8080/GetTasks?project_id=${id}`, {
+    const res = await fetch(`https://teampulse.velixir.run/GetTasks?project_id=${id}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     if (res.ok) setTasks((await res.json()) ?? []);
@@ -102,7 +102,7 @@ export function ProjectTasks({ projectId, onClose }: ProjectTasksProps) {
     event.preventDefault();
     const isEditing = modalMode === "edit" && selectedTask;
     const res = await fetch(
-      isEditing ? `http://localhost:8080/UpdateTask/${selectedTask.id}` : "http://localhost:8080/AddTask",
+      isEditing ? `https://teampulse.velixir.run/UpdateTask/${selectedTask.id}` : "https://teampulse.velixir.run/AddTask",
       {
         method: isEditing ? "PATCH" : "POST",
         headers: {
@@ -122,7 +122,7 @@ export function ProjectTasks({ projectId, onClose }: ProjectTasksProps) {
 
   const deleteTask = async () => {
     if (!selectedTask) return;
-    const res = await fetch(`http://localhost:8080/DeleteTask/${selectedTask.id}`, {
+    const res = await fetch(`https://teampulse.velixir.run/DeleteTask/${selectedTask.id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });

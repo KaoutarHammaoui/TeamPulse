@@ -6,7 +6,7 @@ export function Logout() {
   const [error, setError] = useState("");
 
   const LogoutFunc = async () => {
-    const res = await fetch("http://localhost:8080/logout", {
+    const res = await fetch("https://teampulse.velixir.run/logout", {
       method: "POST",
       headers: {
        "Authorization": `Bearer ${localStorage.getItem("token")}`,

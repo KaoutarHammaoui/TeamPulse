@@ -18,7 +18,7 @@ export function UpdateRole() {
   const navigate = useNavigate();
   useEffect(() => {
     const getUSer = async () => {
-      const res = await fetch(`http://localhost:8080/GetUser/${id}`, {
+      const res = await fetch(`https://teampulse.velixir.run/GetUser/${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -38,7 +38,7 @@ export function UpdateRole() {
   }, [id]);
 
   const UpdateRoleFunc = async () => {
-    const res = await fetch(`http://localhost:8080/UpdateUserRole/${id}`, {
+    const res = await fetch(`https://teampulse.velixir.run/UpdateUserRole/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

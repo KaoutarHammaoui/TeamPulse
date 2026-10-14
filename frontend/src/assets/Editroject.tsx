@@ -12,7 +12,7 @@ export function Editroject() {
   
   useEffect(() => {
     const fetchedPr = async () => {
-      const res = await fetch(`http://localhost:8080/GetProject/${id}`, {
+      const res = await fetch(`https://teampulse.velixir.run/GetProject/${id}`, {
         method: "GET",
         headers: {
           "Authorization":`Bearer ${localStorage.getItem('token')}`
@@ -31,7 +31,7 @@ export function Editroject() {
 
   const SubmitEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const res = await fetch(`http://localhost:8080/UpdateProject/${id}`, {
+    const res = await fetch(`https://teampulse.velixir.run/UpdateProject/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

@@ -15,7 +15,7 @@ export function AddTask() {
 
   useEffect(() => {
     const fetchProjectName = async () => {
-      const res = await fetch(`http://localhost:8080/GetProject/${id}`, {
+      const res = await fetch(`https://teampulse.velixir.run/GetProject/${id}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -33,7 +33,7 @@ export function AddTask() {
 
   const AddNewTask = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:8080/AddTask", {
+    const res = await fetch("https://teampulse.velixir.run/AddTask", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

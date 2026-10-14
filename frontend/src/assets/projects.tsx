@@ -15,7 +15,7 @@ export function Projects() {
   const [taskProject, setTaskProject] = useState<Project | null>(null);
   useEffect(() => {
     const DAtaFetching = async () => {
-      const response = await fetch("http://localhost:8080/GetProjects", {
+      const response = await fetch("https://teampulse.velixir.run/GetProjects", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

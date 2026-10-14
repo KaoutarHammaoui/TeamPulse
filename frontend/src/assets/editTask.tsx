@@ -13,7 +13,7 @@ export function EditTask() {
 
   useEffect(() => {
     const fetchTask = async () => {
-      const res = await fetch(`http://localhost:8080/tasks/${id}`, {
+      const res = await fetch(`https://teampulse.velixir.run/tasks/${id}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -34,7 +34,7 @@ export function EditTask() {
 
   const EditFunc = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:8080/UpdateTask/${id}`, {
+    const res = await fetch(`https://teampulse.velixir.run/UpdateTask/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

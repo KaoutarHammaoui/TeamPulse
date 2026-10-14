@@ -9,7 +9,7 @@ export function DeletePR() {
 
 
         const deletion = async () => {
-            const res = await fetch(`http://localhost:8080/DeleteProject/${id}`, {
+            const res = await fetch(`https://teampulse.velixir.run/DeleteProject/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization":`Bearer ${localStorage.getItem('token')}`

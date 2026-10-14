@@ -13,7 +13,7 @@ export function Login() {
         e.preventDefault()
         setError('')
         try {
-            const DataFetching = await fetch("http://localhost:8080/login", {
+            const DataFetching = await fetch("https://teampulse.velixir.run/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })

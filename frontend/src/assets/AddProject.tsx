@@ -10,7 +10,7 @@ export function AddProject() {
 
     const AddProjectInfo = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        const res = await fetch("http://localhost:8080/CreateProject", {
+        const res = await fetch("https://teampulse.velixir.run/CreateProject", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

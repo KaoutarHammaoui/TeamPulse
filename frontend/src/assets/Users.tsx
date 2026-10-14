@@ -13,7 +13,7 @@ export function GetUsers() {
   const navigate = useNavigate();
   useEffect(() => {
     const GetThem = async () => {
-      const res = await fetch("http://localhost:8080/Users", {
+      const res = await fetch("https://teampulse.velixir.run/Users", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

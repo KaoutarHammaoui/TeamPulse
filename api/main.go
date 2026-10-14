@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"auth/db"
 	"auth/handlers"
@@ -21,7 +22,19 @@ func main() {
 	_ = godotenv.Load() // readas .env and makes jwt_secret available via os.getenv
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
-	Dbase, err := db.Connect("app.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		switch {
+		case fileExists("schema.sql"):
+			dbPath = "app.db"
+		case fileExists(filepath.Join("api", "schema.sql")):
+			dbPath = filepath.Join("api", "app.db")
+		default:
+			dbPath = "app.db"
+		}
+	}
+
+	Dbase, err := db.Connect(dbPath)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -71,4 +84,9 @@ func main() {
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
 }

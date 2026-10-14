@@ -22,7 +22,7 @@ type ProjectResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	CreatedAt string `json:"created_at"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type UpdateProjectStruct struct {
@@ -88,27 +88,27 @@ func (h *AuthHandler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page,errQ:=strconv.Atoi(r.URL.Query().Get("page"))
-	if errQ!=nil || page<1{
-		page=1
+	page, errQ := strconv.Atoi(r.URL.Query().Get("page"))
+	if errQ != nil || page < 1 {
+		page = 1
 	}
-	limit,errL:=strconv.Atoi(r.URL.Query().Get("limit"))
-	if errL!=nil || limit <1{
-		limit=10
+	limit, errL := strconv.Atoi(r.URL.Query().Get("limit"))
+	if errL != nil || limit < 1 {
+		limit = 10
 	}
-	if limit>100{
-		limit=100
+	if limit > 100 {
+		limit = 100
 	}
-	offset:=(page-1)*limit
+	offset := (page - 1) * limit
 	var query string
 	var resp *sql.Rows
 	var err error
 	if role == string(models.AdminRole) {
-		query = `SELECT id,title,description FROM projects LIMIT ? OFFSET ?`
-		resp, err = h.DB.Query(query,limit,offset)
+		query = `SELECT id,title,description FROM projects ORDER BY id DESC LIMIT ? OFFSET ?`
+		resp, err = h.DB.Query(query, limit, offset)
 	} else {
-		query = `SELECT id,title,description FROM projects WHERE user_id=? LIMIT ? OFFSET ?`
-		resp, err = h.DB.Query(query, userId,limit,offset)
+		query = `SELECT id,title,description FROM projects WHERE user_id=? ORDER BY id DESC LIMIT ? OFFSET ?`
+		resp, err = h.DB.Query(query, userId, limit, offset)
 	}
 
 	if err != nil {
@@ -170,17 +170,17 @@ func (h *AuthHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 	var createdAt string
 	if role == string(models.AdminRole) {
 		query := `SELECT id,title,description,created_at FROM projects WHERE id=?`
-		respErr = h.DB.QueryRow(query, idParam).Scan(&Id, &title, &description,&createdAt)
+		respErr = h.DB.QueryRow(query, idParam).Scan(&Id, &title, &description, &createdAt)
 	} else {
 		query := `SELECT id,title,description,created_at FROM projects WHERE id=? AND user_id=?`
-		respErr = h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description,&createdAt)
+		respErr = h.DB.QueryRow(query, idParam, UserId).Scan(&Id, &title, &description, &createdAt)
 	}
 
 	if respErr != nil {
 		http.Error(w, "Project doesn't exist", 404)
 		return
 	}
-	Project := ProjectResponse{ID: int64(Id), Title: title, Description: description,CreatedAt: createdAt}
+	Project := ProjectResponse{ID: int64(Id), Title: title, Description: description, CreatedAt: createdAt}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
